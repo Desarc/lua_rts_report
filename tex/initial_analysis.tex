@@ -1,7 +1,38 @@
 \chapter{Initial analysis}
 \label{ch:initial_analysis}
+This chapter describes the analysis I made prior to the experimental work, comparing Lua to other programming languages and discussing the possible use of Lua in the relevant contexts (state machine based applications and embedded systems).
 
-\section{The advantages of using Lua in a state machine based system}
+
+\section{Lua compared to other programming languages}
+\label{sec:lua_compared}
+The programming languages listed are either similar to Lua, or relevant with respect to embedded systems or state machine applications.
+
+\subsection{Python}
+Like Lua, Python is a multi-paradigm programming language frequently used for scripting and embedding in other applications. There are however some significant differences between the two, and the official Lua wiki has a list (with some discussion) of these differences. It also sums them up nicely with the following line: ``Assuming you have the luxury of a fast CPU, virtual memory, and hard disk storage, the vast library resources of Python could help get your project completed sooner. If you don't have those luxuries, Python is not an option as it is quite large.'' \cite{website:lua_wiki_python}. Additionally, Lua is generally faster than Python, one exception being numeric computing with integers \cite{website:lua_perl_python_vs}.
+
+\subsection{Perl}
+
+\subsection{JavaScript}
+
+\subsection{Java}
+\label{sec:lua_comp_java}
+
+\paragraph{Speed}
+
+\paragraph{Maintained by Oracle}
+
+\paragraph{Overhead}
+
+\subsection{C and C++}
+\label{sec:lua_comp_c}
+When working with embedded systems on smaller devices, this is a very natural question to ask. C is by far the most commonly used programming language for embedded systems, because of the control it gives over lower level entities like I/O devices and memory combined with good performance and (if the program is well-designed) low memory use. This makes the effort required to port a program to a new architecture relatively low, because you don't have to rewrite a whole VM. However, coding in C is significantly more tedious, as we have to handle things memory allocation. We would like to provide application development at a "higher level", where these things are handled automatically, making the development process a lot quicker and easier (especially for less experienced programmers).
+
+Since Lua is written in C, a Lua state machine application will obviously be largely C-based anyway, but this will (hopefully) be hidden by the Lua implementation. The performance loss is obviously a good argument in favor of C, but with the available (and simple) C API in Lua, some of the worse cases could potentially be written as libraries in C code, diminishing this loss.
+
+\section{Lua and state machine systems}
+\label{sec:lua_and_state_machines}
+
+\subsection{The advantages of using Lua in a state machine based system}
 \label{sec:lua_advantages}
 
 There are many other programming languages that are valid and may be used for state machine implementations. What makes Lua special?
@@ -29,7 +60,7 @@ Lua supports multitasking in the form of coroutines, which is collaborative (non
 \paragraph{Complexity}
 One of the goals of Lua is to be simple, without being simplistic \cite{article:the_implementation_of_lua}. It is fairly easy for less experienced programmers to read and use Lua, allowing users to add functionality without having to learn all the underlying quirks. At the same time, the Lua meta-mechanisms allow for more complex and powerful use of the language, resulting in support for additional paradigms (like object-oriented programming).
 
-\section{The disadvantages and challenges of using Lua in a state machine based system}
+\subsection{The disadvantages and challenges of using Lua in a state machine based system}
 \label{sec:lua_disadvantages}
 While there are many arguments that speak in favor of exploring Lua for state machine based systems, there are also some apparent limitations.
 
@@ -42,32 +73,50 @@ A first glance at the Lua reference manual indicates that standard Lua offers ve
 \paragraph{Software libraries}
 One of the goals of Lua is to provide a core that is as small as possible, and thus stripped of most non-essential parts. This means that standard Lua only offers basic Lua functionality \cite[ch. 6]{book:lua_reference_manual}, and anything else must be added through extra libraries. While there are many different extra libraries available for Lua, these tend to have less portability than the core itself, limiting our options if we want to run Lua on anything but the most common platforms. Additionally, Lua libraries are far less in number and diversity than those of its competitors, like for example Python.
 
-\section{Lua compared to other programming languages}
-\label{sec:lua_compared}
+\section{Lua in embedded systems}
+\label{ch:lua_in_embedded}
 
-\subsection{Scripting languages}
-\label{sec:lua_comp_script}
-The programming languages described here are commonly used as scripting languages.
-http://flux242.blogspot.no/2013/05/python-vs-perl-vs-lua-speed-comparison.html
+\subsection{Motivation}
 
-\paragraph{Python}
-http://lua-users.org/wiki/LuaVersusPython
 
-\paragraph{Perl}
+\subsection{Feasibility}
 
-\paragraph{JavaScript}
 
-\subsection{Java}
-\label{sec:lua_comp_java}
+\subsection{Portability}
 
-\paragraph{Speed}
+\subsection{eLua}
 
-\paragraph{Maintained by Oracle}
+\subsection{LEGO Mindstorms}
+\cite{chapter:porting_lua_microcontroller}
 
-\paragraph{Overhead}
+\subsection{Einsatz von Lua in Embedded Systems}
+http://www.amazon.de/Lua-Einsatz-von-Embedded-Systems/dp/3907857151/
 
-\subsection{C and C++}
-\label{sec:lua_comp_c}
-When working with embedded systems on smaller devices, this is a very natural question to ask. C is by far the most commonly used programming language for embedded systems, because of the control it gives over lower level entities like I/O devices and memory combined with good performance and (if the program is well-designed) low memory use. This makes the effort required to port a program to a new architecture relatively low, because you don't have to rewrite a whole VM. However, coding in C is significantly more tedious, as we have to handle things memory allocation. We would like to provide application development at a "higher level", where these things are handled automatically, making the development process a lot quicker and easier (especially for less experienced programmers).
+\begin{itemize}
+	\item DLL <-> Lua interface
+	\item Lua on embedded DOS system
+	\item Lua on embedded Linux system
+	\item Lua on FOX Board G20
+	\item eLua on mbed
+	\item Peripherals and I/O
+	\item Benchmarks and performance measurements
+	\item SWIG: http://en.wikipedia.org/wiki/SWIG
+	\item toLua: http://www.tecgraf.puc-rio.br/~celes/tolua/
+	\item examples: http://sourceforge.net/projects/lua/
+\end{itemize}
 
-Since Lua is written in C, a Lua state machine application will obviously be largely C-based anyway, but this will (hopefully) be hidden by the Lua implementation. The performance loss is obviously a good argument in favor of C, but with the available (and simple) C API in Lua, some of the worse cases could potentially be written as libraries in C code, diminishing this loss.
+\subsection{Mihini}
+
+\section{Lua and M2M}
+\label{ch:lua_m2m}
+
+\subsection{M2M basics}
+\label{sec:m2m_basics}
+
+\subsection{Current M2M industry standards}
+\label{sec:m2m_industry_standards}
+
+\subsection{What makes Lua suitable for M2M systems?}
+
+\subsection{Existing Lua frameworks for M2M}
+\label{sec:existing_frameworks}
