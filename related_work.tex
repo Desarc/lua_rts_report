@@ -10,7 +10,15 @@ Reactive Blocks (\url{http://www.bitreactive.com/})is a Java-based framework for
 	\item Activity diagram \ref{state_machine_systems}: describes the internal behavior and logic of the block.
 	\item External state machine: serves as an interface towards other blocks and the enclosing application. Defines which input signals are allowed in a given state, transitions associated with an input signal and a state, and any output signals resulting from the transition.
 	\item Java methods that handle any operations performed as part of a transition.
-\end{itemize} 
+\end{itemize}
+
+An example of a building block in Reactive Blocks is displayed in figure \ref{figure:reactive_blocks}.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.5]{img/reactive_blocks.png}
+	\caption[A building block in Reactive Blocks]{An example of a building block in Reactive Blocks, displaying the activity diagram (to the left) and the external state machine (to the right). Image source: \url{http://reference.bitreactive.com/doc/building_blocks} \label{figure:reactive_blocks} }
+\end{figure}
 
 The Reactive Blocks SDK has various advantages for development of state machine -based applications:
 \begin{itemize}
@@ -23,7 +31,14 @@ The Reactive Blocks SDK has various advantages for development of state machine 
 However, one fundamental disadvantage is that any applications created with Reactive Blocks require a Java VM. This creates an obstacle when working on embedded systems, because the Java SE Embedded VM currently only supports the \textit{most powerful} embedded systems \cite{website:java_embedded_vm}. Memory requirements range from 130KB RAM/350KB ROM (minimal configuration) to several MB for both RAM and ROM (full configuration), which is more than what you can expect to find in a typical light
 
 \subsection{RKH}
-RKH (\url{http://rkh-reactivesys.sourceforge.net}) is a C-based development tool for implementing state machine -based systems. It is specifically designed to work on embedded systems, and consists of various platform-independent modules. The software provides a cooperative scheduler, timer and event managers, as well as a graphical interface for designing state machines based on UML state tables. Like Reactive Blocks, RKH generates and compiles code that can be run directly.
+RKH (\url{http://rkh-reactivesys.sourceforge.net}) is a C-based development tool for implementing state machine -based systems. It is specifically designed to work on embedded systems, and consists of various platform-independent modules. The software provides a cooperative scheduler, timer and event managers, as well as a graphical interface to help designing state machines based on UML state tables. Like Reactive Blocks, RKH generates and compiles code that can be run directly. An example of a transition table statement in RKH is displayed in figure \ref{figure:rkh_transition}.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.7]{img/rkh_transition_table.png}
+	\caption[A transition table statement in RKH]{An example of a transition table statement in RKH, written in C code. Each line in the statement defines a transition with input signal, guard function, action function and target state. Image source: \url{http://rkh-reactivesys.sourceforge.net/qref.html} \label{figure:rkh_transition} }
+\end{figure}
+
 
 RKH has some particularly strong advantages when developing state machine -based applications on embedded systems:
 \begin{itemize}
