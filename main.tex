@@ -1,7 +1,7 @@
 \documentclass{MScthesisITEM}
 
 % this package is just to generate text for demo-purposes
-\usepackage{blindtext}
+%\usepackage{blindtext}
 \usepackage{hyperref}
 
 
@@ -60,18 +60,19 @@
 \cleardoublepage
 
 %% include if relevant
-\listoftables
-\cleardoublepage
+%\listoftables
+%\cleardoublepage
 
 %% include if relevant
-\listofalgorithms
-\addcontentsline{toc}{chapter}{List of Algorithms}
-\cleardoublepage
+%\listofalgorithms
+%\addcontentsline{toc}{chapter}{List of Algorithms}
+%\cleardoublepage
+
 
 %% include if relevant
-\printglossary[title=List of Symbols, style=long]
-\cleardoublepage
-\glsaddall[]
+%\printglossary[title=List of Symbols, style=long]
+%\cleardoublepage
+%\glsaddall[]
 
 %% include if relevant
 \printglossary[title=List of Acronyms,type=\acronymtype] % prints just the list of acronyms
@@ -80,12 +81,17 @@
 \pagenumbering{arabic}
 \pagestyle{ruled}
 \include{intro}
+\cleardoublepage
 \include{background}
+\cleardoublepage
 \include{related_work}
+\cleardoublepage
 \include{initial_analysis}
+\cleardoublepage
 \include{experimental_work}
+\cleardoublepage
 \include{discussion}
-%\include{misc}
+\cleardoublepage
 %% include here the other chapters
 
 \renewcommand*{\bibname}{References}
@@ -93,13 +99,13 @@
 \bibliography{main}
 
 %% Uncomment the following if you have any appendix
-% \appendix
-% \addtocontents{toc}{%
-%  \protect\vspace{1em}% 
-%  \protect\noindent \bfseries \appendixtocname\protect\par
-%  \protect\vspace{-.5em}%
-% }
-% \renewcommand{\chaptername}{\appendixname}
+\appendix
+\addtocontents{toc}{%
+ \protect\vspace{1em}% 
+ \protect\noindent \bfseries \appendixtocname\protect\par
+ \protect\vspace{-.5em}%
+}
+\renewcommand{\chaptername}{\appendixname}
 %% include below possible appendices (chapters)
 
 

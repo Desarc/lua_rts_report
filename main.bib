@@ -10,9 +10,19 @@
 	number =     "7",
 	pages =      "1159--1176",
 	date =       "2005-07-28",
-	month =      jul,
 	note =       "\url{http://www.jucs.org/jucs_11_7/the_implementation_of_lua}"
- }
+}
+
+@article{ article:passing_a_language,
+	author =     "R. Ierusalimschy and L. H. de Figueiredo and W. Celes",
+	title =      "Passing a {L}anguage through the {E}ye if a {N}eedle",
+	journal =    "ACM Queue - Programming Languages",
+	year =       "2011",
+	volume =     "9",
+	number =     "5",
+	date =       "2011-05-12",
+	note =       "\url{http://queue.acm.org/detail.cfm?id=1983083}"
+}
 
 %*************************************************************
 % WEBSITES
@@ -44,7 +54,14 @@
 	title = 		"Lua-users wiki: {L}ua {V}ersus {P}ython",
 	howpublished = 	"website (wiki)",
 	note = 			"\url{http://lua-users.org/wiki/LuaVersusPython}, retrieved 18.09.2013 20:27",
-	key = 			"LWi"
+	key = 			"Lvs"
+}
+
+@misc {website:lua_wiki_perl,
+	title = 		"Lua-users wiki: {L}ua {V}ersus {P}erl",
+	howpublished = 	"website (wiki)",
+	note = 			"\url{http://lua-users.org/wiki/LuaVersusPerl}, retrieved 23.10.2013 18:14",
+	key = 			"Lvs"
 }
 
 @misc {website:lua_perl_python_vs,
@@ -85,6 +102,13 @@
 	year = 			"2003"
 }
 
+@misc{ website:java_embedded_vm,
+	title = 		"Java {E}mbedded \gls{vm}",
+	howpublished = 	"website (product specification)",
+	note =			"\url{http://www.oracle.com/technetwork/java/embedded/overview/getstarted/index.html}, retrieved 23.10.2013 18:00",
+	key = 			"JVM",
+}
+
 %*************************************************************
 % BOOKS
 %*************************************************************
@@ -104,14 +128,6 @@
 	year = 			"2008"
 }
 
-@book{ book:lua_reference_manual,
-	title = 		"The {L}ua 5.2 {R}eference {M}anual",
-	author =    	"R. Ierusalimschy and L. H. de Figueiredo and W. Celes",
-	publisher = 	"Lua.org, PUC-Rio",
-	year = 			"2011",
-	note = 			"\url{http://www.lua.org/manual/5.2/manual.html}"
-}
-
 @book{ book:programming_in_lua_first,
 	title = 		"Programming in {L}ua",
 	author =    	"Ierusalimschy, Roberto",
@@ -128,3 +144,27 @@
 	edition = 		"Second"
 }
 
+%*************************************************************
+% MANUALS
+%*************************************************************
+
+@manual{ manual:lua_reference_manual,
+	title = 		"The {L}ua 5.2 {R}eference {M}anual",
+	author =    	"R. Ierusalimschy and L. H. de Figueiredo and W. Celes",
+	organization = 	"Lua.org",
+	year = 			"2011",
+	note = 			"\url{http://www.lua.org/manual/5.2/manual.html}",
+	key =			"LRM",
+}
+
+%*************************************************************
+% PROCEEDINGS
+%*************************************************************
+
+@inproceedings{ inproceedings:the_evolution_of_lua,
+	title = 		"The {E}volution of {L}ua",
+	author =     	"R. Ierusalimschy and L. H. de Figueiredo and W. Celes",
+	year = 			"2007",
+	booktitle = 	"HOPL III - Proceedings of the third ACM SIGPLAN conference on History of programming languages",
+	organization = 	"\gls{acm}",
+}
