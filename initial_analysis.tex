@@ -2,7 +2,6 @@
 \label{ch:initial_analysis}
 This chapter describes the analysis I made prior to the experimental work, comparing Lua to other programming languages and discussing the possible use of Lua in the relevant contexts (state machine based applications and embedded systems).
 
-
 \section{Lua compared to other programming languages}
 \label{sec:lua_compared}
 The programming languages discussed in this section are either similar to Lua, or relevant with respect to embedded systems or state machine applications.
@@ -29,23 +28,19 @@ Overall, this makes Lua a much more suitable language for embedded systems.
 
 \subsection{Ruby}
 \label{sec:lua_vs_ruby}
+Comparing Lua to Ruby is slightly less straightforward than comparing to Perl or Python. A short discussion on the official Lua wiki offers some insight, mentioning that Lua is easier to embed, at least until the release of MRuby \cite{website:lua_wiki_ruby}. There is also some indication that Lua’s performance is much better, but this also depends on the future MRuby release. A more concrete evaluation of Ruby versus Lua performance shows that Lua is in fact faster than Ruby on average, but not for all cases \cite{website:computer_language_benchmarks_game}. Also, Ruby seems to do better on memory management. These properties will also depend on which implementation is considered; Ruby has many implementations for various platforms and \glspl{vm}, and for Lua one might choose LuaJIT for increased performance. Looking at the reference implementation of Ruby which is \gls{mri}, we see that the binary image of its latest version (2.0) is about 17MB, which is quite big, especially compared to Lua’s 227KB.
 
+Overall, Ruby seems like a lesser alternative for use in embedded systems, at least until MRuby is released.
 
 \subsection{Java}
-\label{sec:lua_comp_java}
+\label{sec:lua_vs_java}
 
-
-\paragraph{Speed}
-
-\paragraph{Maintained by Oracle}
-
-\paragraph{Overhead}
 
 \subsection{C and C++}
 \label{sec:lua_vs_c}
-When working with embedded systems on smaller devices, this is a very natural question to ask. C is by far the most commonly used programming language for embedded systems, because of the control it gives over lower level entities like I/O devices and memory combined with good performance and (if the program is well-designed) low memory use. This makes the effort required to port a program to a new architecture relatively low, because you don't have to rewrite a whole VM. However, coding in C is significantly more tedious, as we have to handle things memory allocation. We would like to provide application development at a "higher level", where these things are handled automatically, making the development process a lot quicker and easier (especially for less experienced programmers).
+When working with embedded systems on smaller devices, this is a very natural question to ask. C is by far the most commonly used programming language for embedded systems, because of the control it gives over lower level entities like I/O devices and memory combined with good performance and (if the program is well-designed) low memory use. This makes the effort required to port a program to a new architecture relatively low, because you don't have to rewrite a whole \gls{vm}. However, coding in C is significantly more tedious, as we have to handle things memory allocation. We would like to provide application development at a "higher level", where these things are handled automatically, making the development process a lot quicker and easier (especially for less experienced programmers).
 
-Since Lua is written in C, a Lua state machine application will obviously be largely C-based anyway, but this will (hopefully) be hidden by the Lua implementation. The performance loss is obviously a good argument in favor of C, but with the available (and simple) C API in Lua, some of the worse cases could potentially be written as libraries in C code, diminishing this loss.
+Since Lua is written in C, a Lua state machine application will obviously be largely C-based anyway, but this will (hopefully) be hidden by the Lua implementation. The performance loss is obviously a good argument in favor of C, but with the available (and simple) C \gls{api} in Lua, some of the worse cases could potentially be written as libraries in C code, diminishing this loss.
 
 \section{Lua and state machine systems}
 \label{sec:lua_and_state_machines}
@@ -56,18 +51,18 @@ Since Lua is written in C, a Lua state machine application will obviously be lar
 There are many other programming languages that are valid and may be used for state machine implementations. What makes Lua special?
 
 \paragraph{Memory footprint}
-The standard Lua core was purposefully designed to be minimalistic, offering only a base set of functions \cite{article:the_implementation_of_lua}. As a result of this, the extra memory used, by either adding Lua to your application (extending) or running the code through the Lua interpreter, is minimal. The Lua interpreter built with the standard libraries requires only a total of 182K memory on Linux \cite{website:lua_about}. Without the standard libraries, the memory footprint is actually less than 100K. This is an important property, especially when working with embedded systems, where memory capabilities are usually severely restricted. Lua thus allows for high-level application scripting without adding much overhead.
+The standard Lua core was purposefully designed to be minimalistic, offering only a base set of functions \cite{article:the_implementation_of_lua}. As a result of this, the extra memory used, by either adding Lua to your application (extending) or running the code through the Lua interpreter, is minimal. The Lua interpreter built with the standard libraries requires only a total of 227KB "\gls{rom}" on Linux. Without the standard libraries, the memory footprint is actually less than 100KB \cite{website:lua_about}. This is an important property, especially when working with embedded systems, where memory capabilities are usually severely restricted. Lua thus allows for high-level application scripting without adding much overhead.
 
 \paragraph{Speed}
 Lua is considered to be one of the fastest available scripting languages, and independent benchmarks support this claim \cite{website:computer_language_benchmarks_game}. Speed versus memory usage is a common trade-off in computer systems, and this is highly relevant for embedded real-time systems, where both memory and speed have restricting limits. It is unlikely that Lua performance can (on average) match that of a fully compiled language like Java or C++ on any architecture, but relatively good performance combined with a low memory cost and low complexity makes Lua a possible middle-option.
 
-The performance of Lua may be further increased with LuaJIT (however at a slightly increased memory cost). LuaJIT is an independently maintained Just-In-Time Compiler for Lua, whose purpose is to increase Lua performance by compiling (and caching) Lua code to machine code (as opposed to bytecode, which is what the standard Lua interpreter does). LuaJIT has been shown to increase Lua performance by significant factors for single threaded programs on various processors \cite{website:luajit_performance}. 
+The performance of Lua may be further increased with LuaJIT (however at a slightly increased memory cost). LuaJIT is an independently maintained \gls{jit} for Lua, whose purpose is to increase Lua performance by compiling (and caching) Lua code to machine code (as opposed to bytecode, which is what the standard Lua interpreter does). LuaJIT has been shown to increase Lua performance by significant factors for single threaded programs on various processors \cite{website:luajit_performance}. 
 
 \paragraph{Portability}
 The Lua interpreter is written in \gls{clean-c}. This means the interpreter can be compiled and built out-of-the-box on any platform with a standard C compiler, and may similarly be adapted and cross-compiled also to run on even more platforms. The Lua core has been deliberately designed to allow for portability to "unsupported" platforms with minimal changes to its code \cite{chapter:porting_lua_microcontroller}. With a working Lua interpreter, any standard Lua program will work for the given platform.
 
 \paragraph{Embedding}
-In addition to the Lua interpreter itself being portable, Lua is easy to embed into applications written in other languages. Similarly, Lua may be extended with libraries written in other languages. Lua is actually designed to be an extension language, and this area also accounts for most of its use \cite{website:where_lua_is_used}. Lua is particularly refined for working with C, providing a robust and flexible C API \cite[ch. 24]{book:programming_in_lua_first}. This means that functionality that may be inconvenient to implement in Lua (e.g. I/O handling on a microcontroller) can be added through a C library, with relative ease. Alternatively, a state machine based application may consist of a C runtime system, with the state machines and application logic defined in Lua.
+In addition to the Lua interpreter itself being portable, Lua is easy to embed into applications written in other languages. Similarly, Lua may be extended with libraries written in other languages. Lua is actually designed to be an extension language, and this area also accounts for most of its use \cite{website:where_lua_is_used}. Lua is particularly refined for working with C, providing a robust and flexible C \gls{api} \cite[ch. 24]{book:programming_in_lua_first}. This means that functionality that may be inconvenient to implement in Lua (e.g. I/O handling on a microcontroller) can be added through a C library, with relative ease. Alternatively, a state machine based application may consist of a C runtime system, with the state machines and application logic defined in Lua.
 
 \paragraph{Sandboxing}
 In Lua, functions are first-class values. Additionally, references to the standard library functions are stored in variables in the Lua global environment. Whenever a globally defined function is called, Lua looks it up in the global environment table. If we wish to restrict access to certain functions, the table entry may be replaced by a different function, performing some checking before access to the actual (renamed) library function is given. In a state machine system, this could be useful if we want to allow the execution of arbitrary state machines, and allows us to implement safety and security with relative ease. Additionally, memory and CPU usage can be limited by use of the standard Lua debugging library \cite[ch. 6.10]{manual:lua_reference_manual}.

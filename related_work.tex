@@ -8,7 +8,7 @@ State machine -based systems is a well-established concept in the world of softw
 
 \subsection{Reactive Blocks}
 \label{sec:reactive_blocks}
-Reactive Blocks (\url{http://www.bitreactive.com})is a Java-based framework for developing state machine applications. It offers integration with the Eclipse IDE, and is essentially a code/application generator with a graphical interface, tailored for event-driven and concurrent systems. Application design is done by creating, connecting and combining various “building blocks”. These building blocks consist of three parts:
+Reactive Blocks (\url{http://www.bitreactive.com})is a Java-based framework for developing state machine applications. It offers integration with the Eclipse \gls{ide}, and is essentially a code/application generator with a graphical interface, tailored for event-driven and concurrent systems. Application design is done by creating, connecting and combining various “building blocks”. These building blocks consist of three parts:
 \begin{itemize}
 	\item Activity diagram \ref{state_machine_systems}: describes the internal behavior and logic of the block.
 	\item External state machine: serves as an interface towards other blocks and the enclosing application. Defines which input signals are allowed in a given state, transitions associated with an input signal and a state, and any output signals resulting from the transition.
@@ -31,7 +31,7 @@ The Reactive Blocks SDK has various advantages for development of state machine 
 	\item Java has a huge base of libraries that may be combined with Reactive Blocks to provide functionality and application development on higher levels.
 \end{itemize}
 
-However, one fundamental disadvantage is that any applications created with Reactive Blocks require a Java virtual machine. This creates an obstacle when working on embedded systems, because the Java SE Embedded VM currently only supports the \textit{most powerful} embedded systems \cite{website:java_embedded_vm}. Memory requirements range from 130KB RAM/350KB ROM (minimal configuration) to several MB for both RAM and ROM (full configuration), which is more than what you can expect to find in a typical light
+However, one fundamental disadvantage is that any applications created with Reactive Blocks require a Java virtual machine. This creates an obstacle when working on embedded systems, because the Java SE Embedded \gls{vm} currently only supports the \textit{most powerful} embedded systems \cite{website:java_embedded_vm}. Memory requirements range from 130KB \gls{ram}/350KB \gls{rom} (minimal configuration) to several MB for both \gls{ram} and \gls{rom} (full configuration), which is more than what you can expect to find in a typical light
 
 \subsection{RKH}
 \label{sec:rkh_state_machine}
@@ -45,7 +45,7 @@ RKH (\url{http://rkh-reactivesys.sourceforge.net}) is a C-based development tool
 
 RKH has some particularly strong advantages when developing state machine -based applications on embedded systems:
 \begin{itemize}
-\item RKH is fairly platform-independent, and already built to support many platforms and processors (linux, RTOS, mbed etc…). Additionally, the modules are customizable and the project is open source, meaning it can be adapted also to custom platforms.
+\item RKH is fairly platform-independent, and already built to support many platforms and processors (linux, \gls{rtos}, mbed etc…). Additionally, the modules are customizable and the project is open source, meaning it can be adapted also to custom platforms.
 \item The system has a very small memory footprint, making it usable also for minimal embedded systems.
 \item Application design with state tables and diagrams is simple and maintainable.
 \end{itemize}
@@ -59,25 +59,25 @@ However, for the less experienced programmer, RKH also provides some challenges:
 
 \subsection{Quantum Leaps}
 \label{sec:quantum_leaps}
-Quantum Leaps (\url{http://www.state-machine.com}) offers a product for developing state machine -based applications in two parts: an active object framework, Quantum Platform (QP), and a graphical modeling tool, QP Modeler (QM).
+Quantum Leaps (\url{http://www.state-machine.com}) offers a product for developing state machine -based applications in two parts: an active object framework, \gls{qp}, and a graphical modeling tool, \gls{qm}.
 
-QP is open-source, portable, C/C++ based, and built on a non-blocking, run-to-completion kernel. QP-applications consist of strictly encapsulated and asynchronously communicating active objects similar to the building blocks of Reactive Blocks described in Section \ref{sec:reactive_blocks}. The behavior of an active object is specified by an UML statechart, which can be modeled in QM. QM is a fully graphical modeling environment which generates C or C++ code according to the UML statecharts to be used with the QP framework. An example of a statechart modeled in QM is displayed in figure \ref{figure:qm_statechart}.
+\gls{qp} is open-source, portable, C/C++ based, and built on a non-blocking, run-to-completion kernel. \gls{qp}-applications consist of strictly encapsulated and asynchronously communicating active objects similar to the building blocks of Reactive Blocks described in Section \ref{sec:reactive_blocks}. The behavior of an active object is specified by an UML statechart, which can be modeled in \gls{qm}. QM is a fully graphical modeling environment which generates C or C++ code according to the UML statecharts to be used with the \gls{qp} framework. An example of a statechart modeled in \gls{qm} is displayed in figure \ref{figure:qm_statechart}.
 
-Some of the advantages with QP/QM are:
+Some of the advantages with \gls{qp}/\gls{qm} are:
 \begin{itemize}
-	\item Memory requirements for QP are very low, and range from 2KB ROM/100B RAM (QP-nano) to 8KB ROM/1KB RAM (QP/C and QP/C++).
-	\item QP is ported to a large number of platforms and processors, including ARM and AVR32 processors, Android, FreeRTOS and Arduino.
-	\item QP provides automatic rule checking of the generated code.
-	\item QM offers application development and implementation at the design level.
+	\item Memory requirements for \gls{qp} are very low, and range from 2KB \gls{rom}/100B \gls{ram} (\gls{qp}-nano) to 8KB \gls{rom}/1KB \gls{ram} (\gls{qp}/C and \gls{qp}/C++).
+	\item \gls{qp} is ported to a large number of platforms and processors, including ARM and AVR32 processors, Android, Free\gls{rtos} and Arduino.
+	\item \gls{qp} provides automatic rule checking of the generated code.
+	\item \gls{qm} offers application development and implementation at the design level.
 \end{itemize}
 
 \begin{figure}[h]
 	\centering
 	\includegraphics[scale=0.6]{img/qm_statechart.png}
-	\caption[An UML statechart in QM]{A QP active object modeled as a hierarchical UML statechart in QM. Each statechart lists possible input signals and the following output signals or actions. Image source: \url{http://www.state-machine.com/qm/index.php} \label{figure:qm_statechart} }
+	\caption[An UML statechart in QM]{A \gls{qp} active object modeled as a hierarchical UML statechart in \gls{qm}. Each statechart lists possible input signals and the following output signals or actions. Image source: \url{http://www.state-machine.com/qm/index.php} \label{figure:qm_statechart} }
 \end{figure}
 
-The major disadvantage with QP/QM is that it is implemented in C/C++, which means implementation of application-specific transaction operations require knowledge of C/C++ programming. However, while these are considered to be more “advanced” languages than for example Python, the level of knowledge required in this context may not be all that high (these operations can be quite simple).
+The major disadvantage with \gls{qp}/\gls{qm} is that it is implemented in C/C++, which means implementation of application-specific transaction operations require knowledge of C/C++ programming. However, while these are considered to be more “advanced” languages than for example Python, the level of knowledge required in this context may not be all that high (these operations can be quite simple).
 
 \subsection{IntelliWizard}
 \label{sec:intelliwizard}
@@ -90,7 +90,7 @@ While Lua is primarily used as an extension and scripting language for applicati
 
 \subsection{LEGO Mindstorms}
 \label{sec:lego_mindstorms}
-In chapter 26 of “Lua programming gems” \cite{chapter:porting_lua_microcontroller}, Ralph Hempel describes his efforts in porting the Lua interpreter to a platform with severe memory constraints. His choice of platform was a LEGO MINDSTORMS NXT system with an ARM7-based microcontroller, 256KB ROM and 64K RAM. Hempel, being an experienced embedded systems programmer, used his own custom toolchain for compilation and linking. The first thing he noted in the process, was that all of the changes needed to port the basic Lua code to the ARM7 microcontroller were limited to a single file, and the Lua developers had actually created a specific space for such changes. One thing requiring quite a bit of extra work, was building a run-time library (RTL) to support Lua on the microcontroller (standard Lua uses libraries from the operating system). Hempel chose to build his own, but pointed out that a RTL is usually available from the manufacturer of the system. To reduce complexity of these libraries and make it all work within the limited resources of the platform, Hempel made some changes to the capabilities of the Lua garbage collector, the I/O system, as well as the number system used (standard Lua is based only on floating-point math). His final conclusion was that while it is possible to port Lua to a microcontroller like the one he used, it requires a lot more work and consideration than simply adapting it to a different operating system.
+In chapter 26 of “Lua programming gems” \cite{chapter:porting_lua_microcontroller}, Ralph Hempel describes his efforts in porting the Lua interpreter to a platform with severe memory constraints. His choice of platform was a LEGO MINDSTORMS NXT system with an ARM7-based microcontroller, 256KB \gls{rom} and 64K \gls{ram}. Hempel, being an experienced embedded systems programmer, used his own custom toolchain for compilation and linking. The first thing he noted in the process, was that all of the changes needed to port the basic Lua code to the ARM7 microcontroller were limited to a single file, and the Lua developers had actually created a specific space for such changes. One thing requiring quite a bit of extra work, was building a \gls{rtl} to support Lua on the microcontroller (standard Lua uses libraries from the operating system). Hempel chose to build his own, but pointed out that an \gls{rtl} is usually available from the manufacturer of the system. To reduce complexity of these libraries and make it all work within the limited resources of the platform, Hempel made some changes to the capabilities of the Lua garbage collector, the I/O system, as well as the number system used (standard Lua is based only on floating-point math). His final conclusion was that while it is possible to port Lua to a microcontroller like the one he used, it requires a lot more work and consideration than simply adapting it to a different operating system.
 
 \subsection{Einsatz von Lua in Embedded Systems}
 \label{sec:einsatz_von_lua_embedded}
@@ -98,10 +98,10 @@ In their book “Einsatz von Lua in Embedded Systems” \cite{book:einsatz_von_l
 
 \subsection{Mihini}
 \label{sec:mihini}
-Mihini (\url{http://www.eclipse.org/mihini}) is an open-source embedded runtime for machine-to-machine (M2M) -applications, providing a Lua programming API with the requirement of a Linux environment. In addition to the Lua API and virtual machine, Mihini provides some useful building blocks for M2M applications, like networking (for example their own “M3DA” protocol), I/O management, security, and support for some industrial protocols like Modbus. Mihini itself is not meant to run on the smallest of systems, but rather for bridging the smaller systems (like an Arduino with sensors) to the Internet. Its memory requirements are relatively small (a few MB both for ROM and RAM), which makes it suitable for systems like the Raspberry Pi. Applications for the “slaves” that communicate with the Mihini system are typically written in C code. Since Mihini runs on top of Linux, it is fairly trivial to port it to other platforms than the ones specified in the documentation (provided Linux is available), especially compared to the procedure described in Section \ref{sec:lego_mindstorms}.
+Mihini (\url{http://www.eclipse.org/mihini}) is an open-source embedded runtime for \gls{m2m} -applications, providing a Lua \gls{api} with the requirement of a Linux environment. In addition to the Lua \gls{api} and virtual machine, Mihini provides some useful building blocks for \gls{m2m} applications, like networking (for example their own “M3DA” protocol), I/O management, security, and support for some industrial protocols like Modbus. Mihini itself is not meant to run on the smallest of systems, but rather for bridging the smaller systems (like an Arduino with sensors) to the Internet. Its memory requirements are relatively small (a few MB both for \gls{rom} and \gls{ram}), which makes it suitable for systems like the Raspberry Pi. Applications for the “slaves” that communicate with the Mihini system are typically written in C code. Since Mihini runs on top of Linux, it is fairly trivial to port it to other platforms than the ones specified in the documentation (provided Linux is available), especially compared to the procedure described in Section \ref{sec:lego_mindstorms}.
 
 \subsection{eLua}
 \label{sec:elua}
-eLua (or Embedded Lua, \url{http://www.eluaproject.net}) is an open-source full implementation of the Lua virtual machine for some selected processors and embedded platforms. It does not require an operating system to run, and is portable to other platforms in addition to the ones supported. Like standard Lua, eLua is made to be minimalistic, and thus only offers some specific libraries for the embedded platform in addition to the standard Lua implementation. The modules are generalized and designed to run on various platform, making the Lua applications built on top of the framework almost completely platform-independent. eLua provides modules for most of the common peripherals, like LEDs, buttons, Ethernet and USB, as well as facilities like system timers and PIO. The full binary image of eLua requires ~256KB of ROM, but by removing some of the additional modules (if they are not required by the application), it can also fit on a system with only 128KB. eLua provides its own minimal file system, allowing Lua source code to be loaded onto and run directly on the microcontroller.
+eLua (or Embedded Lua, \url{http://www.eluaproject.net}) is an open-source full implementation of the Lua virtual machine for some selected processors and embedded platforms. It does not require an operating system to run, and is portable to other platforms in addition to the ones supported. Like standard Lua, eLua is made to be minimalistic, and thus only offers some specific libraries for the embedded platform in addition to the standard Lua implementation. The modules are generalized and designed to run on various platform, making the Lua applications built on top of the framework almost completely platform-independent. eLua provides modules for most of the common peripherals, like LEDs, buttons, Ethernet and USB, as well as facilities like system timers and PIO. The full binary image of eLua requires ~256KB of \gls{rom}, but by removing some of the additional modules (if they are not required by the application), it can also fit on a system with only 128KB. eLua provides its own minimal file system, allowing Lua source code to be loaded onto and run directly on the microcontroller.
 
 Because it is fairly quick and easy to get started with eLua on one of the supported platforms, I chose to use eLua with the LM3S9D92 microcontroller for my experimental work in Chapter \ref{ch:experimental_work}. The software provides a solid base for testing the feasibility of Lua applications, including those based on state machines, on minimalistic platforms. Some additional characteristics of eLua that are relevant in this context are described in Section \ref{sec:running_on_micro}.
