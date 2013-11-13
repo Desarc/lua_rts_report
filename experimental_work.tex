@@ -1,8 +1,19 @@
 \chapter{Experimental work}
 \label{ch:experimental_work}
+This chapter describes the experimental work done as part of the project. Since it is a rather incremental process, the goal, procedure and relevant results are described individually in each section.
 
 \section{Implementation of a runtime support system for state machines in Lua}
 \label{sec:impl_runtime_support}
+The first step towards working with state machine -based applications, is building a runtime system for a collection of generalized state machines. For the experimental purposes of this project, a runtime system with only the most basic functionality is needed. The components required for this are:
+
+\begin{itemize}
+	\item An ‘event’ data structure for handling messages to and between state machines
+	\item A ‘timer’ object for keeping track of timed events
+	\item A template/\gls{api} for state machines
+	\item A 'scheduler' to keep track of active state machines, events and timers, and assigning events and timers to their respective state machines at the appropriate time.
+\end{itemize}
+
+It turns out to be quite simple to implement this system in Lua. The source code is included in Appendix \ref{}
 
 \section{Implementation of simple state machines in Lua}
 \label{sec:impl_state_machines}
