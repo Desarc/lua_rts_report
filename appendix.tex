@@ -1,6 +1,400 @@
 \begin{appendices}
 
-\chapter{Runtime Support System for state machines in Lua}
+\chapter{Lua code for Runtime Support System}
 \label{app:rts_code}
+
+\begin{luacode}
+-- inheritable template for a state machine implementation
+StateMachine = {
+	TERMINATE_SELF = -1,
+	EXECUTE_TRANSITION = 0,
+	DISCARD_EVENT = 1,
+	TERMINATE_SYSTEM = 2,
+}
+
+function StateMachine.run()
+	error("No coroutine created for this state machine!")
+end
+
+function StateMachine:fire()
+	error("'fire' function not yet implemented for this state machine!")
+end
+
+function StateMachine:id()
+	if self.data then
+		return self.data.id
+	else
+		error("StateMachine has no ID!")
+	end
+end
+
+function StateMachine:get_state()
+	if self.data then
+		return self.data.current_state
+	else
+		error("StateMachine has no state!")
+	end
+end
+
+function StateMachine:set_state(state)
+	if not self.data then
+		self.data = {}
+	end
+	self.data.current_state = state
+end
+
+function StateMachine:new()
+	local o = {}
+	setmetatable(o, { __index = self })
+	return o
+end
+
+return StateMachine
+\end{luacode}
+
+\begin{listing}[htp]
+\begin{luacode}
+-- structure of events passed between state machines
+Event = {}
+
+function Event:state_machine_id()
+	return self.data.state_machine_id
+end
+
+function Event:type()
+	return self.data.event_type
+end
+
+function Event:get_data()
+	return self.data.user_data
+end
+
+function Event:new(state_machine_id, event_type, user_data)
+	local o = {}
+	setmetatable(o, { __index = self })
+	o.data = {state_machine_id = state_machine_id, event_type = event_type,
+						user_data = user_data}
+	return o
+end
+
+return Event
+\end{luacode}
+\end{listing}
+
+\begin{listing}[htp]
+\begin{luacode}
+-- structure of timer used to signal an event
+Timer = {}
+
+function Timer:expires()
+	return self.data.expires
+end
+
+function Timer:state_machine_id()
+	return self.data.state_machine_id
+end
+
+function Timer:event()
+	return self.data.event
+end
+
+function Timer:id()
+	return self.data.id
+end
+
+function Timer.time()
+	return tmr.read(tmr.SYS_TIMER)
+end
+
+function Timer:new(expires, state_machine_id, event)
+	local o = {}
+	setmetatable(o, { __index = self })
+	local id = state_machine_id .. expires
+	o.data = {id = id, expires = self.time()+expires,
+						state_machine_id = state_machine_id, event = event}
+	return o
+end
+
+return Timer
+\end{luacode}
+\end{listing}
+
+\begin{listing}[htp]
+\begin{luacode}
+-- the scheduler keeping track of active state machines, timers and events
+Scheduler = {}
+
+local function controller_time()
+  return tmr.read(tmr.SYS_TIMER)
+end
+
+function Scheduler:add_state_machine(state_machine)
+  state_machine.run = coroutine.create(state_machine.fire)
+  self.state_machine_list[state_machine:id()] = state_machine
+  print("State machine '"..state_machine:id().."' added to scheduler.")
+end
+
+function Scheduler:remove_state_machine(state_machine)
+  if self.state_machine_list[state_machine:id()] then
+    result = true -- return true if state machine existed
+    print("State machine '"..state_machine:id().."' removed from scheduler.")
+  end
+    self.state_machine_list[state_machine:id()] = nil
+  return result
+end
+
+function Scheduler:add_to_queue(event)
+  table.insert(self.event_queue, event)
+end
+
+function Scheduler:get_next_event()
+  return table.remove(self.event_queue, 1)
+end
+
+function Scheduler.time()
+  return tmr.read(tmr.SYS_TIMER)
+end
+
+local function timers_cmp(t1, t2)
+  if t1:expires() < t2:expires() then return true end
+end
+
+function Scheduler:add_timer(timer)
+  if timer:expires() then
+    table.insert(self.timers, timer)
+    table.sort(self.timers, timers_cmp)
+  end
+end
+
+function Scheduler:stop_timer(id)
+  for k, v in self.timers do
+    if v:id() == id then
+      table.remove(self.timers, k)
+      break
+    end
+  end
+end
+
+function Scheduler:check_timers()
+  local now = self.time()
+  if self.timers[1] then
+    if self.timers[1]:expires() < now then return table.remove(self.timers, 1) end
+  end
+end
+
+function Scheduler:set_active_event(event)
+  self.active_event = event
+end
+
+\end{luacode}
+\end{listing}
+
+\begin{listing}[htp]
+\begin{luacode}
+-- Scheduler cont.
+function Scheduler:get_active_event()
+  local event = self.active_event
+  self.active_event = nil
+  return event
+end
+
+function Scheduler:check_active()
+  if table.getn(self.timers) > 0 or table.getn(self.event_queue) > 0 then
+    return true
+  else
+    return false
+  end
+end
+
+function Scheduler:new(system_type)
+  local o = {}
+  setmetatable(o, { __index = self })
+  o.state_machine_list = {}
+  o.event_queue = {}
+  o.timers = {}
+  return o
+end
+
+function Scheduler:run()
+  print("Scheduler running.")
+  local success, status, state_machine
+  local start = self.time()
+
+  while(true) do		
+    local timer = self:check_timers()
+    if timer then
+      state_machine = self.state_machine_list[timer:state_machine_id()]
+      self:set_active_event(timer:event())
+      success, status = coroutine.resume(state_machine.run, state_machine)
+      if not success then
+        print("Success: "..tostring(success)..", status: "..status)
+        self:remove_state_machine(state_machine)
+        break
+      elseif status == StateMachine.TERMINATE_SYSTEM then
+        break
+      end
+    end
+
+    local event = self:get_next_event()
+    if event then
+      state_machine = self.state_machine_list[event:state_machine_id()]
+      self:set_active_event(event)
+      success, status = coroutine.resume(state_machine.run, state_machine)
+      if not success then
+        print("Success: "..tostring(success)..", status: "..status)
+        self:remove_state_machine(state_machine)
+        break
+      elseif status == StateMachine.TERMINATE_SYSTEM then
+        break
+      end
+    end
+  end
+  print("Terminating system...")
+end
+
+return Scheduler
+\end{luacode}
+\end{listing}
+
+\chapter{Representation of the TrafficLightController state machine in Lua}
+\label{app:traffic_light}
+
+\begin{luacode}
+StateMachine = require "state_machine"
+Timer = require "timer"
+Event = require "event"
+
+local S0, S1, S2, S3, S4, S5 = "S0", "S1", "S2", "S3", "S4", "S5"
+local YELLOW_DELAY = 3000000
+local PEDESTRIAN_TIME = 10000000
+local SAFE_TIME = 1000000
+
+TrafficLightController = StateMachine:new()
+
+TrafficLightController.events = {
+	PEDESTRIAN_BUTTON_PRESSED = 1,
+	YELLOW_TIMER_EXPIRED = 2,
+	PEDESTRIANS_GO = 3,
+	PEDESTRIAN_TIMER_EXPIRED = 4,
+	CARS_GO = 5,
+}
+
+function TrafficLightController:new(id, scheduler)
+	local o = {}
+	setmetatable(o, { __index = self})
+	o.data = {}
+	o.data.id = id
+	o.data.current_state = S0
+	o.scheduler = scheduler
+	scheduler:add_state_machine(o)
+	return o
+end
+
+function TrafficLightController:fire()
+	while(true) do
+		local event = self.scheduler:get_active_event()
+		local current_state = self:get_state()
+
+		if event:type() == self.TERMINATE_SELF then
+			break
+
+		elseif current_state == S0 then
+			if event:type() == self.events.PEDESTRIAN_BUTTON_PRESSED then
+				print("Car light set to yellow.")
+				local new_event = Event:new(self:id(), self.events.YELLOW_TIMER_EXPIRED)
+				self.scheduler:add_timer(Timer:new(YELLOW_DELAY, self:id(), new_event))
+				self:set_state(S1)
+				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
+			end
+
+-- continued on next page
+\end{luacode}
+
+\begin{listing}[htp]
+\begin{luacode}
+		elseif current_state == S1 then
+			if event:type() == self.events.YELLOW_TIMER_EXPIRED then
+				print("Car light set to red.")
+				local new_event = Event:new(self:id(), self.events.PEDESTRIANS_GO)
+				self.scheduler:add_timer(Timer:new(SAFE_TIME, self:id(), new_event))
+				self.set_state(S2)
+				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
+			end
+			
+		elseif current_state == S2 then
+			if event:type() == self.events.PEDESTRIANS_GO then
+				print("Pedestrian light set to green.")
+				local new_event = Event:new(self:id(), self.events.PEDESTRIAN_TIMER_EXPIRED)
+				self.scheduler:add_timer(Timer:new(PEDESTRIAN_TIME, self:id(), new_event))
+				self:set_state(S3)
+				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
+			end
+
+		elseif current_state == S3 then
+			if event:type() == self.events.PEDESTRIAN_TIMER_EXPIRED then
+				print("Pedestrian light set to red.")
+				local new_event = Event:new(self:id(), self.events.CARS_GO)
+				self.scheduler:add_timer(Timer:new(SAFE_TIME, self:id(), new_event))
+				self:set_state(S4)
+				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
+			end
+
+		elseif current_state == S4 then
+			if event:type() == self.events.CARS_GO then
+				print("Car light set to yellow.")
+				local new_event = Event:new(self:id(), self.events.YELLOW_TIMER_EXPIRED)
+				self.scheduler:add_timer(Timer:new(YELLOW_DELAY, self:id(), new_event))
+				self:set_state(S5)
+				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
+			end
+
+		elseif current_state == S5 then
+			if event:type() == self.events.YELLOW_TIMER_EXPIRED then
+				print("Car light set to green.")
+				self:set_state(S0)
+				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+			
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
+			end
+
+		else
+			coroutine.yield(StateMachine.DISCARD_EVENT)
+		end
+	end
+end
+
+return TrafficLightController
+\end{luacode}
+\end{listing}
+
+\begin{listing}
+\begin{luacode}
+
+
+\end{luacode}
+\end{listing}
+
+\begin{listing}
+\begin{luacode}
+
+
+\end{luacode}
+\end{listing}
 
 \end{appendices}

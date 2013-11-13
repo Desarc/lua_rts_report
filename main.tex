@@ -3,6 +3,7 @@
 % this package is just to generate text for demo-purposes
 %\usepackage{blindtext}
 \usepackage{hyperref}
+\usepackage[section]{minted}
 
 
 \title{Runtime Systems for State Machines \newlinetitle in Lua} % The title of your assignement; NB use \newlinetitle to start a newline
@@ -26,6 +27,9 @@
 \selectlanguage{english}
 \pagenumbering{roman}
 \pagestyle{plain}
+\usemintedstyle{autumn}
+\newminted{lua}{linenos, bgcolor=code-bg, baselinestretch=0.7, fontsize=\small, numbersep=4pt, tabsize=2}
+\definecolor{code-bg}{rgb}{0.95, 0.95, 0.95}
 
 %% Only for the project
 \titleITEM
