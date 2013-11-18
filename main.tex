@@ -4,7 +4,7 @@
 %\usepackage{blindtext}
 \usepackage{hyperref}
 \usepackage[section]{minted}
-
+\usepackage{aeguill}
 
 \title{Runtime Systems for State Machines \newlinetitle in Lua} % The title of your assignement; NB use \newlinetitle to start a newline
 \author{\O yvin Richardsen} % Your firstname and lastname
@@ -18,7 +18,7 @@
 % \usepackage{subcaption}
 
 \DeclareGraphicsExtensions{.pdf,.jpg}
-\graphicspath{{./figs/}}
+\graphicspath{{./img/}}
 
 \loadglsentries{glossary}
 \makeglossaries
@@ -29,7 +29,8 @@
 \pagestyle{plain}
 \usemintedstyle{autumn}
 \newminted{lua}{linenos, bgcolor=code-bg, baselinestretch=0.7, fontsize=\small, numbersep=4pt, tabsize=2}
-\renewcommand\listingscaption{Code snippet}
+\renewcommand{\listingscaption}
+\listingscaption{Code snippet}
 \definecolor{code-bg}{rgb}{0.95, 0.95, 0.95}
 
 %% Only for the project

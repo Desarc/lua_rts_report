@@ -1,33 +1,33 @@
 \chapter{Background}
 \label{chp:background}
 
-\section{The Lua programming language}
+\section{The Lua Programming Language}
 \label{sec:lua_language}
-The Lua programming language is a dynamic, multi-paradigm scripting language developed at the \gls{puc-rio}. It is implemented and maintained by a team of only three people: professors Roberto Ierusalimschy and Waldemar Celes of \gls{puc-rio}, and researcher Luiz Henrique de Figueiredo of \gls{impa}. Lua is designed as an embeddable extension language, and considered to be one of the leading scripting languages in game development \cite{inproceedings:the_evolution_of_lua}. A probable reason for Lua’s popularity is that the designers set some goals for the language’s design and implementation that have been respected from the beginning: Lua should be embeddable, simple, efficient, portable and lightweight \cite{article:the_implementation_of_lua}.
+The Lua programming language is a dynamic, multi-paradigm scripting language developed at the \gls{puc-rio}. It is implemented and maintained by a team of only three people: professors Roberto Ierusalimschy and Waldemar Celes of \gls{puc-rio}, and researcher Luiz Henrique de Figueiredo of \gls{impa}. Lua is designed as an embeddable extension language, and considered to be one of the leading scripting languages in game development~\cite{inproceedings:the_evolution_of_lua}. A probable reason for Lua's popularity is that the designers set some goals for the language's design and implementation that have been respected from the beginning: Lua should be embeddable, simple, efficient, portable and lightweight~\cite{article:the_implementation_of_lua}.
 
 Lua has a few properties that, when combined, makes it quite unique in the programming language world. Some of these properties are:
 \begin{itemize}
 	\item Lua is dynamically typed and interpreted, similar to e.g. Python.
-	\item A single kind of data structure, which is an associative array (or simply \textit{table} in Lua).
-	\item A simple and minimalist syntax \cite[ch. 9]{manual:lua_reference_manual}. However, this not makes Lua itself simplistic, because of the support for meta-mechanisms \cite{manual:lua_reference_manual}.
-	\item Lua code is compiled to bytecode, and run in the register-based Lua \gls{vm}. This register-based \gls{vm} is part of what makes Lua efficient \cite{article:the_implementation_of_lua}.
+	\item A single kind of data structure, which is an associative array (or simply \emph{table} in Lua).
+	\item A simple and minimalist syntax~\cite[ch. 9]{manual:lua_reference_manual}. However, this not makes Lua itself simplistic, because of the support for meta-mechanisms \cite{manual:lua_reference_manual}.
+	\item Lua code is compiled to bytecode, and run in the register-based Lua \gls{vm}. This register-based \gls{vm} is part of what makes Lua efficient~\cite{article:the_implementation_of_lua}.
 	\item The Lua \gls{vm} is written in \gls{clean-c}, and additionally offers quick and easy integration with C libraries.
-	\item The Lua core only contains a few standard libraries. The reason for this is to avoid bloating, and decreasing the cost of embedding Lua. Extensions may be added as user libraries \cite{article:the_implementation_of_lua}.
-	\item Lua supports collaborative (non-preemptive) multithreading in the form of coroutines \cite[ch. 2.6]{manual:lua_reference_manual}.
-	\item Included in Lua’s tiny core is an incremental mark-and-sweep garbage collector, which has a few advantages (no extra overhead, simple handling of cycles) and disadvantages (possible execution pause during collection).
-	\item Lua also supports the following concepts: extensible semantics, anonymous functions, full lexical scoping and proper tail calls \cite{inproceedings:the_evolution_of_lua}.
-	\item Lua is distributed under the very liberal MIT license, stating that Lua is open source and may be used for any purpose at no cost \cite{website:lua_license}.
+	\item The Lua core only contains a few standard libraries. The reason for this is to avoid bloating, and decreasing the cost of embedding Lua. Extensions may be added as user libraries~\cite{article:the_implementation_of_lua}.
+	\item Lua supports collaborative (non-preemptive) multithreading in the form of coroutines~\cite[ch. 2.6]{manual:lua_reference_manual}.
+	\item Included in Lua's tiny core is an incremental mark-and-sweep garbage collector, which has a few advantages (no extra overhead, simple handling of cycles) and disadvantages (possible execution pause during collection).
+	\item Lua also supports the following concepts: extensible semantics, anonymous functions, full lexical scoping and proper tail calls~\cite{inproceedings:the_evolution_of_lua}.
+	\item Lua is distributed under the very liberal MIT license, stating that Lua is open source and may be used for any purpose at no cost~\cite{website:lua_license}.
 \end{itemize}
 
-While Lua is designed as an extension scripting language mainly for C applications, it is still possible to execute standalone Lua programs through the Lua interpreter \cite[ch. 7]{manual:lua_reference_manual}.
+While Lua is designed as an extension scripting language mainly for C applications, it is still possible to execute standalone Lua programs through the Lua interpreter~\cite[ch. 7]{manual:lua_reference_manual}.
 
-In addition to games, Lua is also used in various other types of applications and contexts. Some of these are database management, \glspl{ide}, image processing, web and browsers, multimedia, text editors and even operating systems \cite{website:where_lua_is_used}.
+In addition to games, Lua is also used in various other types of applications and contexts. Some of these are database management, \glspl{ide}, image processing, web and browsers, multimedia, text editors and even operating systems~\cite{website:where_lua_is_used}.
 
-Some work has also been done towards using Lua in embedded environments. This is discussed further in section \ref{sec:lua_in_embedded}.
+Some work has also been done towards using Lua in embedded environments. This is discussed further in Sect~\ref{sec:lua_in_embedded}.
 
-\section{State machine -based systems}
+\section{State Machine -based Systems}
 \label{sec:state_machine_system}
 
 
-\section{Embedded systems and M2M}
+\section{Embedded Systems and M2M}
 \label{sec:embedded_m2m}
