@@ -17,7 +17,7 @@
 % \usepackage[bf]{caption}
 % \usepackage{subcaption}
 
-\DeclareGraphicsExtensions{.pdf,.jpg}
+\DeclareGraphicsExtensions{.pdf,.jpg,.png}
 \graphicspath{{./img/}}
 
 \loadglsentries{glossary}
@@ -28,10 +28,10 @@
 \pagenumbering{roman}
 \pagestyle{plain}
 \usemintedstyle{autumn}
-\newminted{lua}{linenos, bgcolor=code-bg, baselinestretch=0.7, fontsize=\small, numbersep=4pt, tabsize=2}
-\renewcommand{\listingscaption}
-\listingscaption{Code snippet}
 \definecolor{code-bg}{rgb}{0.95, 0.95, 0.95}
+\newminted{lua}{linenos, bgcolor=code-bg, baselinestretch=0.7, fontsize=\small, numbersep=4pt, tabsize=2}
+\renewcommand\listingscaption{Code snippet}
+
 
 %% Only for the project
 \titleITEM
