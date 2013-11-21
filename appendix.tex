@@ -6,7 +6,7 @@
 \section{The Runtime Support System}
 \label{code:rts}
 
-\begin{listing}[H]
+\begin{listing}[htp]
 \begin{luacode}
 local Event = {}
 
@@ -48,7 +48,7 @@ return Event
 	\label{code:event}
 \end{listing}
 
-\begin{listing}[H]
+\begin{listing}[htp]
 \begin{luacode}
 local Timer = {}
 
@@ -81,7 +81,7 @@ return Timer
 	\label{code:timer}
 \end{listing}
 
-\begin{listing}[H]
+\begin{listing}[htp]
 \begin{luacode}
 local StateMachine = {
 	EXECUTE_TRANSITION = 0,
@@ -107,7 +107,7 @@ return StateMachine
 	\label{code:stm}
 \end{listing}
 
-\begin{listing}[H]
+\begin{listing}[htp]
 \begin{luacode}
 local StateMachine = require "stm"
 
@@ -187,7 +187,7 @@ function Scheduler:new()
 	\label{code:scheduler}
 \end{listing}
 
-\begin{listing}[H]
+\begin{listing}[htp]
 \begin{luacode}
 -- Scheduler code continued
 
@@ -259,17 +259,17 @@ return Scheduler
 \end{luacode}
 \end{listing}
 
+\FloatBarrier
 \section{The Traffic Light Controller State Machine}
 \label{sec:traffic_light_stm}
 
-\begin{listing}[H]
+\begin{listing}[htp]
 \begin{luacode}
 local StateMachine = require "stm"
 local Event = require "event"
 local Timer = require "timer"
 
 local STMTrafficLightController = StateMachine:new()
-
 local S0, S1, S2, S3, S4, S5 = "S0", "S1", "S2", "S3", "S4", "S5"
 local T1, T2, T3, T4, T5 = "t1", "t2", "t3", "t4", "t5"
 local YELLOW_DELAY, PEDESTRIAN_TIME, SAFE_TIME = 3, 10, 1
@@ -294,23 +294,18 @@ function STMTrafficLightController:new(id, scheduler)
 	setmetatable(o, { __index = self })
 	local data = {id = id, state = S0}
 	local sched = scheduler
-
 	o.id = function ()
 		return data.id
 	end
-
 	o.state = function ()
 		return data.state
 	end
-
 	o.set_state = function (state)
 		data.state = state
 	end
-
 	o.scheduler = function ()
 		return sched
 	end
-
 	scheduler.add_state_machine(o)
 	return o
 end
@@ -323,27 +318,26 @@ function STMTrafficLightController:fire()
 	while(true) do
 		local event = self.scheduler().get_active_event()
 		local current_state = self.state()
+		
+-- continued on next page
+\end{luacode}
+	\caption{Lua code for the Traffic Light Controller state machine.}.
+	\label{code:traffic_light}
+\end{listing}
 
-		if current_state == S0 then
+\begin{listing}[htp]
+\begin{luacode}
+-- STMTrafficLightController continued
+
+	if current_state == S0 then
 			if event.type() == self.events.PEDESTRIAN_BUTTON_PRESSED then
 				print("Car light set to yellow.")
 				self:schedule_event(self.events.YELLOW_TIMER_EXPIRED, YELLOW_DELAY, T1)
 				self.set_state(S1)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
-
 			else
 				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
-		
--- continued on next page
-\end{luacode}
-	\caption{Lua code for the Traffic Light Controller state machine}
-	\label{code:traffic_light}
-\end{listing}
-
-\begin{listing}[H]
-\begin{luacode}
--- STMTrafficLightController continued
 
 	elseif current_state == S1 then
 			if event.type() == self.events.YELLOW_TIMER_EXPIRED
@@ -352,7 +346,6 @@ function STMTrafficLightController:fire()
 				self:schedule_event(self.events.PEDESTRIANS_GO, SAFE_TIME, T2)
 				self.set_state(S2)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
-
 			else
 				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
@@ -364,7 +357,6 @@ function STMTrafficLightController:fire()
 				self:schedule_event(self.events.PEDESTRIAN_TIMER_EXPIRED, PEDESTRIAN_TIME, T3)
 				self.set_state(S3)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
-
 			else
 				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
@@ -376,7 +368,6 @@ function STMTrafficLightController:fire()
 				self:schedule_event(self.events.CARS_GO, SAFE_TIME, T4)
 				self.set_state(S4)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
-
 			else
 				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
@@ -388,7 +379,6 @@ function STMTrafficLightController:fire()
 				self:schedule_event(self.events.YELLOW_TIMER_EXPIRED, YELLOW_DELAY, T5)
 				self.set_state(S5)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
-
 			else
 				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
@@ -399,7 +389,6 @@ function STMTrafficLightController:fire()
 				print("Car light set to green.")
 				self.set_state(S0)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
-			
 			else
 				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
@@ -409,19 +398,11 @@ function STMTrafficLightController:fire()
 		end
 	end
 end
-
 return STMTrafficLightController		
 \end{luacode}
 \end{listing}
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[scale=0.55]{traffic-light-stm}
-	\caption[UML specification for Traffic Light Controller]{UML specification for the Traffic Light Controller state machine. Image source: Unit 1 exercise for TTM4160 course, 2013}
-	\label{fig:traffic_light_uml}
-\end{figure}
-
-\begin{listing}[H]
+\begin{listing}[htp]
 \begin{luacode}
 local Scheduler = require "sched"
 local Event = require "event"
@@ -440,11 +421,176 @@ scheduler:run()
 	\label{code:main}
 \end{listing}
 
-\begin{listing}
+\FloatBarrier
+\section{Client - Server Application}
+
+\begin{listing}[htp]
 \begin{luacode}
+local StateMachine = require "stm"
+local Timer = require "timer"
+local Event = require "event"
+local Message = require "msg"
+local STMTcpClient = require "stm-tcp-client"
+local STMRequestHandler = require "stm-req"
+
+local IDLE, ACTIVE  = 1, 2
+local T1 = "t1"
+local EVENT_INTERVAL = 1
+local EVENT_TARGET = "stm_tc1"
+local EVENT_TYPE = STMTcpClient.events.SEND
+local ASSOCIATE_ID = "stm_rh1"
+local ASSOCIATE_EVENT = STMRequestHandler.events.REQUEST
+local STMEventGenerator = StateMachine:new()
+
+STMEventGenerator.events = {START = 1, STOP = 2, GENERATE = 3,}
+
+function STMEventGenerator:new(id, scheduler)
+	local o = {}
+	setmetatable(o, { __index = self })
+	local data = {id = id, state = IDLE}
+	local sched = scheduler
+	o.id = function ()
+		return data.id
+	end
+	o.state = function ()
+		return data.state
+	end
+	o.set_state = function (state)
+		data.state = state
+	end
+	o.scheduler = function ()
+		return sched
+	end
+	scheduler.add_state_machine(o)
+	return o
+end
+
+-- continued on next page
+\end{luacode}
+	\caption{Lua code for the client request generator}
+	\label{code:event_gen}
+\end{listing}
 
 
+\begin{listing}[htp]
+\begin{luacode}
+-- STMEventGenerator continued
+
+function STMEventGenerator:schedule_request(timer_no)
+	local event = Event:new(self.id(), self.events.GENERATE)
+	local timer = Timer:new(self.id()..timer_no, EVENT_INTERVAL, event)
+	event.set_timer_id(timer_no)
+	self.scheduler().add_timer(timer)
+end
+
+function STMEventGenerator:generate_request()
+	local req = "Hello!"
+	print("Sending request: "..req)
+	local message = Message:new({stm_id = ASSOCIATE_ID, event_type = ASSOCIATE_EVENT, user_data = req})
+	local event = Event:new(EVENT_TARGET, EVENT_TYPE, message)
+	self.scheduler().add_event(event)
+end
+
+function STMEventGenerator:stop_timer(timer_no)
+	self.scheduler().stop_timer(self.id()..timer_no)
+end
+
+function STMEventGenerator:fire()
+	while(true) do
+		local event = self.scheduler().get_active_event()
+		local current_state = self.state()
+
+		if current_state == IDLE then
+			if event.type() == self.events.START then
+				self:schedule_request(T1)
+				self.set_state(ACTIVE)
+				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+			
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
+				
+			end
+
+		elseif current_state == ACTIVE then
+			if event.type() == self.events.GENERATE then
+				self:schedule_request(T1)
+				self:generate_request()
+				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+			
+			elseif event.type() == self.events.STOP then
+				self:stop_timer(T1)
+				self.set_state(IDLE)
+				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+			
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
+
+			end
+
+		else
+			coroutine.yield(StateMachine.DISCARD_EVENT)
+		end
+	end
+
+end
+
+return STMEventGenerator
 \end{luacode}
 \end{listing}
+
+\FloatBarrier
+\chapter{UML State Machine Specifications}
+\label{app:stm_uml}
+
+\section{Traffic Light Controller}
+\label{uml:traffic_light}
+
+\begin{figure}[htp]
+	\centering
+	\includegraphics[scale=0.30]{traffic_light_stm}
+	\caption[UML specification for Traffic Light Controller]{UML specification for the Traffic Light Controller state machine. Image source: Unit 1 exercise for TTM4160 course, 2013}
+	\label{fig:traffic_light_uml}
+\end{figure}
+
+\FloatBarrier
+\section{Client - Server Application}
+\label{uml:client_server}
+
+\begin{figure}[htp]
+	\centering
+	\begin{minipage}{0.45\linewidth}
+		\includegraphics[scale=0.8]{stm_event_gen}
+		\caption[Client \guillemotleft request-generator\guillemotright  state machine]{The state machine in the client application responsible for periodically generating requests.}
+		\label{fig:stm_event_gen}
+	\end{minipage}
+	\quad
+	\begin{minipage}{0.45\linewidth}
+		\includegraphics[scale=0.8]{stm_print_message}
+		\caption[Client \guillemotleft print reply\guillemotright state machine]{The state machine in the client application responsible for displaying replies from the server.}
+		\label{fig:stm_print_message}
+	\end{minipage}
+\end{figure}
+
+\begin{figure}[htp]
+	\centering
+	\includegraphics[scale=0.8]{stm_request_handler}
+	\caption[Server \guillemotleft request-handler\guillemotright  state machine]{The state machine in the server application responsible for handling requests from clients.}
+	\label{fig:stm_request_handler}
+\end{figure}
+
+\begin{figure}[htp]
+	\centering
+	\begin{minipage}{0.45\linewidth}
+		\includegraphics[scale=0.8]{stm_client_conn}
+		\caption[Client TCP-socket state machine]{The state machine in the client application responsible for sending and receiving over TCP.}
+		\label{fig:stm_client_conn}
+	\end{minipage}
+	\quad
+	\begin{minipage}{0.45\linewidth}
+		\includegraphics[scale=0.8]{stm_server_conn}
+		\caption[Server TCP-socket state machine]{The state machine in the server application responsible for sending and receiving over TCP.}
+		\label{fig:stm_server_conn}
+	\end{minipage}
+\end{figure}
 
 \end{appendices}

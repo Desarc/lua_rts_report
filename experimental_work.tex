@@ -63,7 +63,7 @@ When we have a working runtime system, the next step is to create state machines
 
 \subsection{The Traffic Light Controller State Machine}
 \label{sec:impl_traffic_light}
-Like the state machine prototype, the Traffic Light Controller is inspired by an exercise given in the TTM4160 course. In this application, we simulate a controller for a pedestrian traffic light. When a pedestrian pushes the button, the light for cars is set to yellow, and a timer is started. Following the resulting timeout, lights are set to new colors and new timers are started accordingly, until the whole sequence is complete, and the controller waits for a new button press. Its \gls{uml} specification is shown in Fig.~\ref{fig:traffic_light_uml}, and the resulting Lua code in Code snip.~\ref{code:traffic_light}.
+Like the state machine prototype, the Traffic Light Controller is inspired by an exercise given in the TTM4160 course. In this application, we simulate a controller for a pedestrian traffic light. When a pedestrian pushes the button, the light for cars is set to yellow, and a timer is started. Following the resulting timeout, lights are set to new colors and new timers are started accordingly, until the whole sequence is complete, and the controller waits for a new button press. Its \gls{uml} specification is shown in Fig.~\ref{fig:traffic_light_uml}, and the resulting Lua code in Code snip.~\ref{code:traffic_light}\footnote{Also available on GitHub: \url{https://github.com/Desarc/state_machine_rts/tree/master/trafficlight}}.
 
 The Lua code is fairly straightforward: we load required modules and define some constants specific to this state machine, like states, timer delays, and event types. The next step is to create a simple constructor, assigning a given ID to the new Traffic Light Controller instance, setting the initial state, and keeping a reference to the scheduler. The final part is the \emph{fire} function looping over all the possible transitions. This is implemented in an action-oriented way, making the code clearly structured and very readable. Every transition fork ends with a call to \emph{coroutine.yield}, handling execution control back to the scheduler. It is really important to end every possible fork with a yield as done with the numerous \emph{else} statements, or we risk the state machine getting stuck in the loop in case of an unexpected event.
 
@@ -71,7 +71,7 @@ Testing the application is equally straightforward: we create a \guillemotleft m
 
 A test run of this application provided the output displayed in Fig.~\ref{fig:traffic_light_output}, with the appropriate timer delays between each line. This is in line with what we would expect from the \gls{uml} specification in Fig.~\ref{fig:traffic_light_uml}.
 
-\begin{figure}[H]
+\begin{figure}[htp]
 	\centering
 	\includegraphics[scale=0.70]{traffic_light_output}
 	\caption[Output of Traffic Light Controller test run]{Console output resulting from the test run of the Traffic Light Controller state machine application.}
@@ -79,8 +79,29 @@ A test run of this application provided the output displayed in Fig.~\ref{fig:tr
 \end{figure}
 
 \subsection{Two Communicating Applications}
+Our next step is to test the runtime system with more than a single state machine, so the scheduler has to do some actual scheduling. To achieve this, I designed some simple state machines working together to form a client and a server. To communicate between the client and the server, I designed state machines using TCP sockets from the LuaSocket library\footnote{\url{http://w3.impa.br/~diego/software/luasocket/}}. The client application consists of one state machine for periodically generating requests (Fig.~\ref{fig:stm_event_gen}), one for displaying replies from the server (Fig.~\ref{fig:stm_print_message}) and one for sending and receiving messages over TCP (Fig.~\ref{fig:stm_client_conn}). The server application consists of one state machine for handling requests (Fig.~\ref{fig:stm_request_handler}) and one for sending and receiving messages over TCP (Fig.~\ref{fig:stm_server_conn})
+The Lua implementation for the request generating state machine is displayed in Code snip.~\ref{code:event_gen}, and the remaining implementations are publicly available on GitHub\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/client-server}}.
 
+Comparing the implementation of the request generator to the implementation of the Traffic Light Controller in Sect.~\ref{sec:impl_traffic_light}, we see that a lot of the code may be reused. We basically only need to change state and event definitions, implement any operations performed in transitions, and finally change the action-oriented list of transitions to reflect those of the current state machine. It requires only minimal work, and is not particularly error-prone because the code is simple and readable. This also applies to the other state machines implemented for this application, and implies that creating more complex applications, given the state machine template and a working runtime system, should be rather trivial.
 
+Running the two applications also produced the expected results: the client application periodically sends requests, these are handled by the server application, and the client application finally receives a response. The output produced is displayed in Fig.~\ref{fig:client_server_output}.
+
+\begin{figure}[htp]
+	\centering
+	\begin{subfigure}[b]{.4\textwidth}
+		\includegraphics[scale=0.45]{server_output}
+		\caption{Server output}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}[b]{.4\textwidth}
+		\includegraphics[scale=0.45]{client_output}
+		\caption{Client output}
+	\end{subfigure}
+	\caption{Console output from running the client-server application.}
+	\label{fig:client_server_output}
+\end{figure}
+
+\FloatBarrier
 \subsection{Comparison to Generated State Machines}
 
 
@@ -96,7 +117,7 @@ A test run of this application provided the output displayed in Fig.~\ref{fig:tr
 \section{Measurements of RTS performance Overhead}
 \label{sec:overhead_measure}
 
-\begin{listing}[H]
+\begin{listing}[h]
 \begin{luacode}
 local task_size = 10
 local task_repeats = 1
