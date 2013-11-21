@@ -21,9 +21,9 @@ Even though Lua is not natively object-oriented, an event object is still easily
 
 \subsection{Timer Object}
 \label{sec:impl_timer}
-The timer object (Code snip.~\ref{code:timer}) is created similarly to the event object described in Sect.~\ref{sec:impl_event} with respect to inheritance and encapsulation. Additionally, we need some way to keep track of time. As discussed in Sect.~\ref{sec:lua_and_state_machines}, Lua does not natively offer preemptive multitasking, so running an active timer on a separate thread is pretty much out of the question. However, for a simple runtime system, we may delegate the responsibility of measuring time to the scheduler component, and simply create a \emph{timestamp} for the desired activation time. This may decrease the timing accuracy of activation, but on the other hand also decreases overhead and complexity of the runtime system. In many cases it is not necessary or even desirable to preempt a running transition, but sufficient to wait until the transition has finished before scheduling the event following the timeout. This is however something that should be addressed when designing a more complete runtime system, and something that may prove challenging, as discussed in Sect.~\ref{sec:lua_and_state_machines}.
+The timer object (Code snip.~\ref{code:timer}) is created similarly to the event object described in Sect.~\ref{sec:impl_event} with respect to inheritance and encapsulation. Additionally, we need some way to keep track of time. As discussed in Sect.~\ref{sec:lua_and_state_machines}, Lua does not natively offer preemptive multitasking~\cite[2.6]{manual:lua_reference_manual}, so running an active timer on a separate thread is pretty much out of the question. However, for a simple runtime system, we may delegate the responsibility of measuring time to the scheduler component, and simply create a \emph{timestamp} for the desired activation time. This may decrease the timing accuracy of activation, but on the other hand also decreases overhead and complexity of the runtime system. In many cases it is not necessary or even desirable to preempt a running transition, but sufficient to wait until the transition has finished before scheduling the event following the timeout. This is however something that should be addressed when designing a more complete runtime system, and something that may prove challenging, as discussed in Sect.~\ref{sec:lua_and_state_machines}.
 
-The granularity of the timestamp is another issue that must be addressed, and is also discussed in Sect.~\ref{sec:lua_and_state_machines}. As a starting point, I chose to use \emph{os.time()}, even though it only offers \emph{second}-granularity. This is OK for the preliminary examples, and further addressed in Sect.~\ref{sec:running_on_micro}.
+The granularity of the timestamp is another issue that must be addressed, and is also discussed in Sect.~\ref{sec:lua_and_state_machines}. As a starting point, I chose to use \emph{os.time()}, even though it only offers \emph{second}-granularity. This is fortunately OK for the preliminary examples, and will be further addressed in Sect.~\ref{sec:running_on_micro}.
 
 \subsection{State Machine Prototype/API}
 \label{sec:impl_stm}
@@ -144,13 +144,14 @@ The only challenge in this process was to find a suitable terminal emulator for 
 
 \subsection{Running the Initial State Machine Applications}
 \label{sec:running_initial}
-With Lua up and running on the evaluation kit board, the next step was to see if the runtime system with different state machine applications would run on it. In order to work on the embedded platform, some minor changes had to be done to the runtime system, particularly those that referenced \gls{os} functions. I had to replace the \emph{os.time()} function with the eLua \emph{tmr.read(tmr.SYS\_TIMER)} in the timer and scheduler objects. Also, because the eLua timers measure time in microseconds, I initially had to change all defined time constants. However, to make the difference between desktop and embedded versions of the runtime system a little smoother, I introduced a \emph{Timer.BASE} value representing the number of milliseconds in the timer object's base value for time measurement. This way we don't have to change timer constants in implemented state machines when changing from running in a desktop environment to running in an embedded environment.
+With Lua up and running on the evaluation kit board, the next step was to see if the runtime system with different state machine applications would run on it. In order to work on the embedded platform, some minor changes had to be done to the runtime system, particularly those that referenced \gls{os} functions. I had to replace the \emph{os.time()} function with the eLua equivalent \emph{tmr.read(tmr.SYS\_TIMER)} in the timer and scheduler objects. Also, because the eLua timers measure time in microseconds, I initially had to change all defined time constants. However, to make the difference between desktop and embedded versions of the runtime system a little smoother, I introduced a \emph{Timer.BASE} value representing the number of milliseconds in the timer object's base value for time measurement. This way we don't have to change timer constants in implemented state machines when changing from running in a desktop environment to running in an embedded environment.
 
 \subsubsection{The Traffic Light Controller Application}
+Code\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/trafficlight-micro}}
 
 
 \subsubsection{The Client - Server Application}
-
+Code\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/client-server-micro}}
 
 \subsubsection{Considerations}
 
