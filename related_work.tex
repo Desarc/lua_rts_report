@@ -17,10 +17,11 @@ Reactive Blocks\footnote{\url{http://www.bitreactive.com}} is a Java-based frame
 
 An example of a building block in Reactive Blocks is displayed in Fig.~\ref{figure:reactive_blocks}.
 
-\begin{figure}[h]
+\begin{figure}[htp]
 	\centering
-	\includegraphics[scale=0.5]{reactive_blocks}
-	\caption[A building block in Reactive Blocks]{An example of a building block in Reactive Blocks, displaying the activity diagram (to the left) and the external state machine (to the right). Image source: \url{http://reference.bitreactive.com/doc/building_blocks} \label{figure:reactive_blocks} }
+	\includegraphics[scale=0.45]{reactive_blocks}
+	\caption[A building block in Reactive Blocks]{An example of a building block in Reactive Blocks, displaying the activity diagram (to the left) and the external state machine (to the right). Image source: \url{http://reference.bitreactive.com/doc/building_blocks}}
+	\label{figure:reactive_blocks}
 \end{figure}
 
 The Reactive Blocks SDK has various advantages for development of state machine -based applications:
@@ -37,10 +38,11 @@ However, one fundamental disadvantage is that any applications created with Reac
 \label{sec:rkh_state_machine}
 RKH\footnote{\url{http://rkh-reactivesys.sourceforge.net}} is a C-based development tool for implementing state machine -based systems. It is specifically designed to work on embedded systems, and consists of various platform-independent modules. The software provides a cooperative scheduler, timer and event managers, as well as a graphical interface to help designing state machines based on UML state tables. Like Reactive Blocks, RKH generates and compiles code that can be run directly. An example of a transition table statement in RKH is displayed in Fig.~\ref{figure:rkh_transition}.
 
-\begin{figure}[h]
+\begin{figure}[htp]
 	\centering
-	\includegraphics[scale=0.7]{rkh_transition_table}
-	\caption[A transition table statement in RKH]{An example of a transition table statement in RKH, written in C code. Each line in the statement defines a transition with input signal, guard function, action function and target state. Image source: \url{http://rkh-reactivesys.sourceforge.net/qref.html} \label{figure:rkh_transition} }
+	\includegraphics[scale=0.6]{rkh_transition_table}
+	\caption[A transition table statement in RKH]{An example of a transition table statement in RKH, written in C code. Each line in the statement defines a transition with input signal, guard function, action function and target state. Image source: \url{http://rkh-reactivesys.sourceforge.net/qref.html}}
+	\label{figure:rkh_transition}
 \end{figure}
 
 RKH has some particularly strong advantages when developing state machine -based applications on embedded systems:
@@ -71,18 +73,13 @@ Some of the advantages with \gls{qp}/\gls{qm} are:
 	\item \gls{qm} offers application development and implementation at the design level.
 \end{itemize}
 
-\begin{figure}[h]
+\begin{figure}[htp]
 	\centering
 	\includegraphics[scale=0.6]{qm_statechart}
 	\caption[An UML statechart in QM]{A \gls{qp} active object modeled as a hierarchical UML statechart in \gls{qm}. Each statechart lists possible input signals and the following output signals or actions. Image source: \url{http://www.state-machine.com/qm/index.php} \label{figure:qm_statechart} }
 \end{figure}
 
 The major disadvantage with \gls{qp}/\gls{qm} is that it is implemented in C/C++, which means implementation of application-specific transaction operations require knowledge of C/C++ programming. However, while these are considered to be more “advanced” languages than for example Python, the level of knowledge required in this context may not be all that high (these operations can be quite simple).
-
-\subsection{IntelliWizard}
-\label{sec:intelliwizard}
-\url{http://www.codeproject.com/Articles/10801/Design-State-Machine-Engine-for-embedded-system-de}
-TODO
 
 \section{Lua in Embedded Systems}
 \label{sec:lua_in_embedded}
@@ -98,7 +95,7 @@ In their book \emph{Einsatz von Lua in Embedded Systems}\cite{book:einsatz_von_l
 
 \subsection{Mihini}
 \label{sec:mihini}
-Mihini\footnote{\url{http://www.eclipse.org/mihini}} is an open-source embedded runtime for \gls{m2m}-applications, providing a Lua \gls{api} with the requirement of a Linux environment. In addition to the Lua \gls{api} and virtual machine, Mihini provides some useful building blocks for \gls{m2m} applications, like networking (for example their own M3DA protocol), I/O management, security, and support for some industrial protocols like Modbus. Mihini itself is not meant to run on the smallest of systems, but rather for bridging the smaller systems (like an Arduino with sensors) to the Internet. Its memory requirements are relatively small (a few MB both for \gls{rom} and \gls{ram}), which makes it suitable for systems like the Raspberry Pi. Applications for the ``slaves'' that communicate with the Mihini system are typically written in C code. Since Mihini runs on top of Linux, it is fairly trivial to port it to other platforms than the ones specified in the documentation (provided Linux is available), especially compared to the procedure described in Sect.~\ref{sec:lego_mindstorms}.
+Mihini\footnote{\url{http://www.eclipse.org/mihini}} is an open-source embedded runtime for \gls{m2m}\\*-applications, providing a Lua \gls{api} with the requirement of a Linux environment. In addition to the Lua \gls{api} and virtual machine, Mihini provides some useful building blocks for \gls{m2m} applications, like networking (for example their own M3DA protocol), I/O management, security, and support for some industrial protocols like Modbus. Mihini itself is not meant to run on the smallest of systems, but rather for bridging the smaller systems (like an Arduino with sensors) to the Internet. Its memory requirements are relatively small (a few MB both for \gls{rom} and \gls{ram}), which makes it suitable for systems like the Raspberry Pi. Applications for the ``slaves'' that communicate with the Mihini system are typically written in C code. Since Mihini runs on top of Linux, it is fairly trivial to port it to other platforms than the ones specified in the documentation (provided Linux is available), especially compared to the procedure described in Sect.~\ref{sec:lego_mindstorms}.
 
 \subsection{eLua}
 \label{sec:elua}

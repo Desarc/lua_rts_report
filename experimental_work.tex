@@ -74,33 +74,35 @@ A test run of this application provided the output displayed in Fig.~\ref{fig:tr
 \begin{figure}[htp]
 	\centering
 	\includegraphics[scale=0.70]{traffic_light_output}
-	\caption[Output of Traffic Light Controller test run]{Console output resulting from the test run of the Traffic Light Controller state machine application.}
+	\caption[Output of Traffic Light Controller test run (desktop)]{Console output resulting from the test run of the Traffic Light Controller state machine application.}
 	\label{fig:traffic_light_output}
 \end{figure}
 
 \subsection{Two Communicating Applications}
 \label{sec:client_server_app}
-Our next step is to test the runtime system with more than a single state machine, so the scheduler has to do some actual scheduling. To achieve this, I designed some simple state machines working together to form a client and a server. To communicate between the client and the server, I designed state machines using TCP sockets from the LuaSocket library\footnote{\url{http://w3.impa.br/~diego/software/luasocket/}}. The client application consists of one state machine for periodically generating requests (Fig.~\ref{fig:stm_event_gen}), one for displaying replies from the server (Fig.~\ref{fig:stm_print_message}) and one for sending and receiving messages over TCP (Fig.~\ref{fig:stm_client_conn}). The server application consists of one state machine for handling requests (Fig.~\ref{fig:stm_request_handler}) and one for sending and receiving messages over TCP (Fig.~\ref{fig:stm_server_conn})
+Our next step is to test the runtime system with more than a single state machine, so the scheduler has to do some actual scheduling. To achieve this, I designed some simple state machines working together to form a client and a server. To communicate between the client and the server, I designed state machines using \gls{tcp} sockets from the LuaSocket library\footnote{\url{http://w3.impa.br/~diego/software/luasocket/}}. The client application consists of one state machine for periodically generating requests (Fig.~\ref{fig:stm_event_gen}), one for displaying replies from the server (Fig.~\ref{fig:stm_print_message}) and one for sending and receiving messages over \gls{tcp} (Fig.~\ref{fig:stm_client_conn}). The server application consists of one state machine for handling requests (Fig.~\ref{fig:stm_request_handler}) and one for sending and receiving messages over \gls{tcp} (Fig.~\ref{fig:stm_server_conn}). The two TCP state machines are almost identical, with the exception that the server side is by default in receive mode, while the client side is in send mode.
 The Lua implementation for the request generating state machine is displayed in Code snip.~\ref{code:event_gen}, and the remaining implementations are publicly available on GitHub\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/client-server}}.
+
+In addition to implementing the new state machines, I had to extend the runtime system with a simple \emph{message} format, enabling easy serialization and deserialization of object data to be sent over the network.
 
 Comparing the implementation of the request generator to the implementation of the Traffic Light Controller in Sect.~\ref{sec:impl_traffic_light}, we see that a lot of the code may be reused. We basically only need to change state and event definitions, implement any operations performed in transitions, and finally change the action-oriented list of transitions to reflect those of the current state machine. It requires only minimal work, and is not particularly error-prone because the code is simple and readable. This also applies to the other state machines implemented for this application, and implies that creating more complex applications, given the state machine template and a working runtime system, should be rather trivial.
 
 Running the two applications also produced the expected results: the client application periodically sends requests, these are handled by the server application, and the client application finally receives a response. The output produced is displayed in Fig.~\ref{fig:client_server_output}.
 
-%\begin{figure}[htp]
-%	\centering
-%	\begin{subfigure}[b]{.4\textwidth}
-%		\includegraphics[scale=0.45]{server_output}
-%		\caption{Server output}
-%	\end{subfigure}
-%	\quad
-%	\begin{subfigure}[b]{.4\textwidth}
-%		\includegraphics[scale=0.45]{client_output}
-%		\caption{Client output}
-%	\end{subfigure}
-%	\caption{Console output from running the client and server applications.}
-%	\label{fig:client_server_output}
-%\end{figure}
+\begin{figure}[htp]
+	\centering
+	\begin{subfigure}[b]{.4\textwidth}
+		\includegraphics[scale=0.45]{server_output}
+		\caption{Server output}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}[b]{.4\textwidth}
+		\includegraphics[scale=0.45]{client_output}
+		\caption{Client output}
+	\end{subfigure}
+	\caption[Output of Client - Server test run (desktop)]{Console output from running the client and server applications.}
+	\label{fig:client_server_output}
+\end{figure}
 
 \FloatBarrier
 \subsection{Comparison to Generated State Machines}
@@ -130,7 +132,7 @@ Additionally, the evaluation kit used supports the following I/O peripherals:
 	\item Oversized board pads for GPIO access
 \end{itemize}
 
-Ethernet and TCP/IP is also supported by eLua for this platform, which should simplify the use of this feature in our state machines. Drivers interfacing with eLua for other peripherals do not seem to be present, but given eLua's open source, it should be possible to add these if needed.
+Ethernet and \gls{tcp}/IP is also supported by eLua for this platform, which should simplify the use of this feature in our state machines. Drivers interfacing with eLua for other peripherals do not seem to be present, but given eLua's open source, it should be possible to add these if needed.
 
 \subsection{Running eLua on the Evaluation Kit Board}
 \label{sec:running_elua}
@@ -144,24 +146,118 @@ The only challenge in this process was to find a suitable terminal emulator for 
 
 \subsection{Running the Initial State Machine Applications}
 \label{sec:running_initial}
-With Lua up and running on the evaluation kit board, the next step was to see if the runtime system with different state machine applications would run on it. In order to work on the embedded platform, some minor changes had to be done to the runtime system, particularly those that referenced \gls{os} functions. I had to replace the \emph{os.time()} function with the eLua equivalent \emph{tmr.read(tmr.SYS\_TIMER)} in the timer and scheduler objects. Also, because the eLua timers measure time in microseconds, I initially had to change all defined time constants. However, to make the difference between desktop and embedded versions of the runtime system a little smoother, I introduced a \emph{Timer.BASE} value representing the number of milliseconds in the timer object's base value for time measurement. This way we don't have to change timer constants in implemented state machines when changing from running in a desktop environment to running in an embedded environment.
+With Lua up and running on the evaluation kit board, the next step was to see if the runtime system with different state machine applications would run on it. In order to work on the embedded platform, some minor changes had to be done to the runtime system, particularly those that referenced \gls{os} functions. I had to replace the \emph{os.time()} function with the eLua equivalent \emph{tmr.read(tmr.SYS\_TIMER)} in the timer and scheduler objects. Also, because the eLua timers measure time in microseconds, I initially had to change all defined time constants. However, to make the difference between desktop and embedded versions of the runtime system a little smoother, I introduced a \emph{Timer.BASE} value representing the number of milliseconds in the timer object's base value for time measurement. This way we don't have to change timer constants in implemented state machines when changing from running in a desktop environment to running in an embedded environment. Similar changes were made to the scheduler, letting us choose which \emph{time} function to use depending on the current platform.
 
 \subsubsection{The Traffic Light Controller Application}
-Code\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/trafficlight-micro}}
+After making the necessary changes to the code\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/trafficlight-micro}} as described above, I copied it to the microcontroller's ROM and attempted to run the application. I was delighted to see that the application ran just as well on the microcontroller as it did in a desktop environment, producing similar output in a timely fashion. The results are displayed in Fig.~\ref{fig:traffic_light_output_micro}.
 
+\begin{figure}[htp]
+	\centering
+	\includegraphics[scale=0.90]{traffic_light_output_micro}
+	\caption[Output of Traffic Light Controller test run (microcontroller)]{Console output resulting from the test run of the Traffic Light Controller state machine application on the evaluation kit board.}
+	\label{fig:traffic_light_output_micro}
+\end{figure}
 
 \subsubsection{The Client - Server Application}
-Code\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/client-server-micro}}
+When testing the client-server application on the evaluation kit board, I chose to make the microcontroller the active client, and let the desktop be the passive server. To make it run on the board, I had to make some additional changes to the code\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/client-server-micro}}. The LuaSocket library is not available in eLua, but it has its own module for \gls{tcp}/IP management, \emph{net}. To use this module instead, I only had to change the functions for connecting, sending and receiving on the network in the client state machine. All state, event and transition definitions fortunately remained the same.
 
-\subsubsection{Considerations}
+Running the application on the board produced almost identical results as in the desktop environment, with one exception: after about 14 requests, the client application running on the board runs out of memory, as displayed in Fig.~\ref{fig:client_output_micro}. This is where the trouble starts.
 
+\begin{figure}[htp]
+	\centering
+	\includegraphics[scale=0.80]{client_output_micro}
+	\caption[Output of client-server test run (microcontroller)]{Console output resulting from the test run of the client state machine application on the evaluation kit board.}
+	\label{fig:client_output_micro}
+\end{figure}
 
+Since running out of memory after a few seconds is not an option, some changes to the system must be made. These changes will be discussed in the following sections.
 
+\section{Memory Use in the Runtime System}
+\label{sec:memory_use}
+Since the microcontroller quickly runs out of memory when running something as simple as the client-server application, some optimizations regarding memory use must be made. Since we are working in a resource-constrained environment, the worst case is that an application like this simply will use too much memory, and sufficient optimization is not possible. However, I initially made no considerations towards memory use when writing the code for the runtime system, so there is likely a lot of room for improvement.
 
-\section{Measurements of RTS performance Overhead}
-\label{sec:overhead_measure}
+\subsection{Analysis of Memory Use}
+\label{sec:memory_analysis}
+Fortunately, chapter 2 of \emph{Lua Programming Gems}~\cite{book:lua_programming_gems} offers some insight into which parts of our program could be using more memory than it really needs. Lua has some particularities in certain areas, especially when it comes to handling of tables and strings. A few interesting points mentioned in the book that are also relevant to the program in question, are listed below:
 
-\begin{listing}[h]
+\paragraph{Closures} Variables and functions inside closures are created anew each time the closure is referenced. This means that the current scheme of encapsulating data inside closures creates new instances not only for the data contained, but for all the setters/getters and other functions declared in the same scope. This is likely to use a lot of extra memory, especially considering timer and event objects that may be instantiated very frequently.
+
+\paragraph{Tables} Tables have various subtleties that may cause them to use more memory than necessary, especially if a large number of small tables is used. Additionally, freeing elements in a table will generally not reduce its size. The recommended approach is to attempt reuse of tables whenever possible, especially when tables are created inside loops. This could be an issue in the case where we continuously create new event and timer objects, and the garbage collector is too slow to reclaim those no longer in use.
+
+\paragraph{Coroutines} Frequently creating and freeing coroutines creates some overhead, however this is mainly performance-related, and the garbage collector should generally clean up the extra memory used in good time. In our runtime system, this is unlikely to be an issue, as we only create one coroutine for each state machine instance, which stays with it for its complete lifetime.
+
+\paragraph{Strings} Lua keeps a single copy of any string in memory, and thus all string variables contain only references to this value. While this will generally conserve memory and speed up many operations, there are some pitfalls. A simple example is a for-loop that builds a string from some values, one step at a time. Using regular string concatenation will create a copy in memory of all the intermediate strings as well as the final result, which is extremely inefficient. This could be a problem in our message object's \emph{serialize}, which does exactly that. However, the messages serialized are generally very short, and thus should not increase memory use dramatically.
+
+\paragraph{The Garbage Collector} 
+The garbage collector used by Lua is not meant for heavy tasks, and may struggle if there is a lot of garbage to collect. The best way to avoid this is to follow the principles of ``reuse and reduce'' as discussed in the paragraphs above, but it is also possible to change some parameters of the garbage collector to make it perform better in certain cases, or even control it manually.
+
+\subsection{First Optimization of Memory Use}
+\label{sec:first_optimalization}
+Taking into account the various possible culprits of excessive memory use discussed in Sect.~\ref{sec:memory_analysis}, I decided that the encapsulation scheme with closure was likely to be the major problem. In addition to the smaller objects such as timers and events being instantiated frequently, the larger objects such as the scheduler and state machine implementations are duplicated within each local scope. This means that we most likely have to significantly reduce encapsulation, or possibly remove it completely.
+
+\subsubsection{Code Changes}
+Weighing the ``safety'' of encapsulation against the increased memory use, I decided it would probably be best to remove it completely, which is likely to make the runtime system safer with respect to running out of memory. The primary changes required are listed below, and the interested reader may find the complete code on GitHub\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/client-server-noencap}}.
+
+\begin{itemize}
+	\item Instead of loading modules locally in each chunk, we can probably save some memory by making the \emph{main} chunk responsible for loading all required modules and making them globally available. This however likely to decrease performance significantly~\cite[Ch. 2]{book:lua_programming_gems}.
+	\item Instead of declaring all member functions inside the \emph{new} closure, make the data ``publicly'' available, and reference member functions by use of inheritance. This is also likely to decrease performance, as member functions are now accessed through the \emph{\_\_index} metamethod.
+\end{itemize}
+
+\subsubsection{Result of Code Changes}
+Removing encapsulation from the runtime system unfortunately required a significant amount of manual code changes to the implemented state machines, because virtually all references to object data or functions had to be changed. However, the change was worthwhile: when running the updated code on the microcontroller, there were no indications of memory problems, and the application seemed able to run indefinitely. It should be kept in mind that while we have reduced overall memory use, it's hard to tell if it increases over time, but hopefully the garbage collector is now able to deal with this properly.
+
+\section{Measurements of Memory Overhead}
+\label{sec:memory_overhead_measure}
+In light of the memory troubles encountered in Sect.~\ref{sec:running_on_micro}, an important question to ask is how much extra memory a state machine application is using compared to an application performing the same task without the added overhead of the runtime system. If the memory overhead is significant, and further results in the possibility that we actually don't have enough, the use of a state machine -based system in the given context would be discouraged. The worst case would be that the garbage collector is not able to deal with the memory used by the runtime system, making it increase steadily.
+
+\subsection{The Test Program}
+\label{sec:test_program}
+Measuring memory used by Lua is fortunately simple: the garbage collector provides a function, \emph{collectgarbage("count")} that returns the amount of memory currently used by Lua in KB. Additionally, the eLua modules use approximately 27KB~\cite{} of relatively stable memory.
+
+In order to test memory use for the runtime system, we simply design a state machine that periodically reads the current memory used, and logs this data somewhere. Since logging options are rather limited on the microcontroller, a better option is to aggregate the data over a period and send it over \gls{tcp} to a desktop application which handles the actual logging. In addition to measuring memory, we also want to simulate the microcontroller performing some useful task simultaneously, to make it more realistic. The chosen task, displayed in Code snip.~\ref{code:simple_task} is perhaps itself not very realistic in this context, but it serves the purpose of consuming some CPU time and memory. This task is simply implemented in its own state machine, running in parallel with the memory measurements.
+
+\begin{listing}[htp]
+\begin{luacode}
+local task_size = 500
+
+local function simple_task()
+	for i=1,task_size do
+		q = i*i
+	end
+end
+\end{luacode}
+	\caption{Code for simple task used in memory overhead testing.}
+	\label{code:simple_task}
+\end{listing}
+
+For comparison, we create a simple program performing roughly the same tasks as the state machine application: continuously running the simple task, in addition to making periodic memory usage measurements and sending aggregate data to a desktop application. The code for the test program is included in Code snip.~\ref{code:memory_overhead_test}, and the full code used for this part is available on GitHub\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/mem-nonopt}}.
+
+\subsection{Results of the First Comparison}
+\label{sec:first_comparison}
+Figure~\ref{fig:memory_use_first} shows a graph representation of the memory used as a function of time. It is clear that the memory overhead of running this program as a state machine application is significant. The simple program uses only 14,8KB on average with a maximum of 17,3KB, while the state machine application uses 55,6KB of dynamic memory on average, with a maximum of over 66KB in this short period, almost 4 times as much. The high maximum is important to notice, because when we add the ``invisible'' overhead of eLua (27KB), the total dynamic memory in use is actually around 93KB, which is dangerously close to the total amount of dynamic memory available on the microcontroller, which is 96KB. Furthermore, the huge difference in average memory used implies that the overhead of the runtime system could be as high as 40KB, close to half of the available dynamic memory, regardless of which state machine application is implemented.
+
+\begin{figure}[htp]
+	\centering
+	\includegraphics[scale=0.90]{memory_use_first}
+	\caption[Result of first overhead comparison test]{Compared memory use of the test program running as a state machine application within the runtime system, and as a simple standalone program.}
+	\label{fig:memory_use_first}
+\end{figure}
+
+In order to justify the use of Lua state machine applications in embedded environments, we need to find out if it is possible to further reduce the memory overhead produced by the runtime system.
+
+\subsection{The Memory Optimized State Machine Runtime System}
+\label{sec:optimized_rts}
+Given the huge memory overhead observed during the testing in Sect.~\ref{sec:first_comparison}, we most likely have to make some drastic changes to the code of our runtime system. In Sect.~\ref{sec:memory_analysis}, various potential issues increasing dynamic memory use are discussed. The issue of closures has already been addressed, so the next step is to attempt more reuse of objects.
+
+\paragraph{Reuse} During the lifetime of a state machine application, it is likely that a large number of timer and event objects will be created. As soon as the event or timer is consumed, it will likely be reclaimed by the garbage collector, but depending on the garbage collector's speed, this may not happen right away. Thus, we risk seeing temporary spikes in dynamic memory use, most likely similar to the spikes observed in Fig.~\ref{fig:memory_use_first}. As an alternative to this scheme, we can reduce the work that needs to be done by the garbage collector by reducing event and timer objects when creating new timers and events. The risk of seeing spikes is then probably reduced, however this is not likely to affect average memory use much. As a bonus, reusing events and timers is probably a little faster than instantiating new objects every time. It should be noted that the optimization gains from this approach depends on the state machine application being run. State machines that frequently consume one event and generates another save more than state machines that consume one event to generate many, which in turn may or may not generate new events.
+
+\paragraph{Strings} Another possible memory sink is the string concatenations performed by the message objects, as well as the state machine measuring memory use. These should however be the same for both test programs, since they send the same messages with an equal amount of data, but it is still worth looking into. Even if the relative difference in memory use may not be affected, we can still reduce average memory use for the runtime system. Depending on how fast these strings are reclaimed by the garbage collector, this reduction may be significant. The recommended approach is to use a table containing only the string values to be concatenated, and then use the \emph{table.concat} function. This should also give a significant performance increase for these tasks~\cite[Ch. 2]{book:lua_programming_gems}.
+
+\paragraph{Coroutines} 
+
+\FloatBarrier
+\section{Measurements of Performance Overhead}
+\begin{listing}[htp]
 \begin{luacode}
 local task_size = 10
 local task_repeats = 1
