@@ -57,6 +57,8 @@ While the most basic functionality is easy to implement, the runtime system outl
 
 \paragraph{Busy Waiting}
 
+\paragraph{External Event Sources}
+
 \section{Implementation of State Machines in Lua}
 \label{sec:impl_state_machines}
 When we have a working runtime system, the next step is to create state machines implementing the application we want to create. The following sections provide some examples of simple state machine applications, based on the prototype described in Sect.~\ref{sec:impl_stm}.
@@ -326,7 +328,7 @@ There are many ways of measuring performance in software. A typical way is to ru
 
 \subsection{Measuring Performance Overhead of the Runtime System}
 \label{sec:performance_overhead_measure}
-Running the test code described in the previous section, we use values for task\_size ranging from 10 to 500000, and values for task\_repeats ranging from 1 to 500. Additionally, results are calculated by averaging the measurements from 10 runs for each set of parameters. Table~\ref{tab:task_size_time} gives an overview of how long it takes to run a task on the microcontroller, given the task\_size parameter.
+Running the test code described in the previous section, we use values for task\_size ranging from 10 to 500000, and values for task\_repeats ranging from 1 to 500. Additionally, results are calculated by averaging the measurements from 10 runs for each set of parameters. Table~\ref{tab:task_size_time} gives an overview of how long it takes to run a task on the microcontroller, given the task\_size parameter. We see that the time required to complete a task is almost directly proportional to the value of task\_size, and that multiplying the value of task\_size by 10 gives a fairly close approximation to the time it takes to run the task in microseconds.
 
 \begin{table}
 	\centering
@@ -366,8 +368,9 @@ TODO
 	\label{fig:performance_overhead_rel}
 \end{figure}
 
-Adjusting the results for number of repeats and task size, we get the relative amount of overhead compared to the amount of useful work done. Figure~\ref{fig:performance_overhead_abs} shows the results of these computations. 
+Adjusting the results for number of repeats and task size, we get the relative amount of overhead compared to the amount of useful work done. Figure~\ref{fig:performance_overhead_abs} shows the results of these computations. WE see that for the special case where we only perform the given task once, the processing overhead is significant for small tasks, with up to 5/6 of the processing time being spent on runtime system overhead. However, it is more realistic to look at the cases where a task is repeated over time. The results barely change at all when we increase the number of task repeats from 50, and while the processing overhead is still quite high for small tasks (up to 2/3), it is much smaller than when running a task once. For tasks taking around 1ms or more to complete, this processing overhead becomes insignificant.
 
+In addition to showing processing overhead, the results in Fig.~\ref{fig:performance_overhead_abs} give us an indication of how frequently the system is able to handle tasks of various sizes before these tasks start to become delayed in time. The system will for example not be able to handle scheduling tasks that take 100$\mu$s with a frequency of 1/5000, because even though there is plenty of time to complete 5000 tasks taking 100$\mu$s in one second, we also have to account for the runtime system overhead, which in this case is almost 250$\mu$s per 100$\mu$s of useful work. This means that a state machine task taking 100$\mu$s will in reality use around 350$\mu$s of processing time, meaning it can be scheduled at most with a frequency of roughly 1/2857 to avoid experiencing delay.
 
 \begin{figure}[htp]
 	\centering
@@ -376,8 +379,42 @@ Adjusting the results for number of repeats and task size, we get the relative a
 	\label{fig:performance_overhead_abs}
 \end{figure}
 
+In order to get an impression of how the results in Fig.~\ref{fig:performance_overhead_abs} relate to real tasks a state machine application might perform, time required to send messages of various sizes over TCP/IP was measured. A simple test program\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/ethernet-send}} was loaded onto the microcontroller, and the results from these measurements are displayed in Tab.~\ref{tab:ethernet_send_times}. Surprisingly, messages longer than 100 characters apparently take less time to send, however this is not that relevant. The important point is that sending a message over TCP/IP takes between 180ms and 200ms, which judging by the results in Fig.~\ref{fig:performance_overhead_abs} will not be affected significantly by the runtime system processing overhead. It seems that for many real tasks, the processing overhead of the runtime system may be negligible, but more tests should be run in order to arrive at a more definite conclusion.
 
+\begin{table}
+	\centering
+	\begin{tabulary}{\textwidth}{| C | C |}
+		\hline
+		Message length (characters) & Time (ms) \\
+		\hline
+		10 & 179 \\
+		\hline
+		100 & 198 \\
+		\hline
+		200 & 196 \\
+		\hline
+		500 & 192 \\
+		\hline
+		1000 & 181 \\
+		\hline
+	\end{tabulary}
+	\caption{Values for message size and the time it takes to send the message over TCP/IP using eLua's \emph{net} module.}
+	\label{tab:ethernet_send_times}
+\end{table}
 
-\subsection{Measuring Comparative Performance of the Optimized Runtime System}
+\subsection{Comparing Performance with the First Version of the Runtime System}
 \label{sec:comp_performance_overhead}
+Compared to the runtime support system proposed in Sect.~\ref{sec:impl_runtime_support}, the memory-optimized version presented in Sect.~\ref{sec:opt_rts} has some significant differences. The various changes described in Sect.~\ref{sec:memory_analysis} and~\ref{sec:more_optimization} were expected to individually both increase and decrease performance, so it is hard to predict what the final result is. To find out, we run the same state machine program described in Sect~\ref{sec:performance_test_code} also with the first version of the runtime system\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/calc-overhead-nonopt}}, and compare the results with those from Sect.~\ref{sec:performance_overhead_measure}. Since results seem to be very similar independent of the number of times we run the task, we use 100 as a fixed value for this parameter.
 
+The compared results are displayed in Fig.~\ref{fig:performance_overhead_comp}. We see that the first version of the runtime system actually performs a little worse than the memory optimized system, so by optimizing memory use, we have also inadvertently made the runtime system more efficient with respect to processing overhead. This clearly speaks in favor of the optimized version.
+
+\begin{figure}[htp]
+	\centering
+	\includegraphics[scale=0.90]{performance_overhead_comp}
+	\caption[Results of performance comparison with the first version of the RTS]{Compared times required to run a task of the given size 100 times with the first RTS, the optimized RTS and without RTS support.}
+	\label{fig:performance_overhead_comp}
+\end{figure}
+
+\FloatBarrier
+\section{A More Complete State Machine Application}
+\label{sec:complete_app}
