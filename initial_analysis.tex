@@ -1,8 +1,8 @@
-\chapter{Initial analysis}
+\chapter{Initial Analysis}
 \label{ch:initial_analysis}
 This chapter describes the analysis I made prior to the experimental work, comparing Lua to other programming languages and discussing the possible use of Lua in the relevant contexts (state machine based applications and embedded systems).
 
-\section{Lua compared to other programming languages}
+\section{Lua Compared to Other Programming Languages}
 \label{sec:lua_compared}
 The programming languages discussed in this section are either similar to Lua, or relevant with respect to embedded systems or state machine applications.
 
@@ -34,7 +34,7 @@ Overall, Ruby seems like a lesser alternative for use in embedded systems, at le
 
 \subsection{Java}
 \label{sec:lua_vs_java}
-
+TODO
 
 \subsection{C and C++}
 \label{sec:lua_vs_c}
@@ -42,10 +42,13 @@ When working with embedded systems on smaller devices, this is a very natural qu
 
 Since Lua is written in C, a Lua state machine application will obviously be largely C-based anyway, but this will (hopefully) be hidden by the Lua implementation. The performance loss is obviously a good argument in favor of C, but with the available (and simple) C \gls{api} in Lua, some of the worse cases could potentially be written as libraries in C code, diminishing this loss.
 
-\section{Lua and state machine systems}
+\section{Lua and State Machine Systems}
 \label{sec:lua_and_state_machines}
+This section contains a fairly superficial analysis of how suitable or not the Lua programming language may be for state machine -based systems.
 
-\subsection{The advantages of using Lua in a state machine based system}
+TODO: rewrite
+
+\subsection{The Advantages of Using Lua in a State Machine -based System}
 \label{sec:lua_advantages}
 
 There are many other programming languages that are valid and may be used for state machine implementations. What makes Lua special?
@@ -73,7 +76,7 @@ Lua supports multitasking in the form of coroutines, which is collaborative (non
 \paragraph{Complexity}
 One of the goals of Lua is to be simple, without being simplistic~\cite{article:the_implementation_of_lua}. It is fairly easy for less experienced programmers to read and use Lua, allowing users to add functionality without having to learn all the underlying quirks. At the same time, the Lua meta-mechanisms allow for more complex and powerful use of the language, resulting in support for additional paradigms (like object-oriented programming).
 
-\subsection{The disadvantages and challenges of using Lua in a state machine based system}
+\subsection{The Disadvantages and Challenges of Using Lua in a State Machine -based System}
 \label{sec:lua_disadvantages}
 While there are many arguments that speak in favor of exploring Lua for state machine based systems, there are also some apparent limitations.
 
@@ -86,13 +89,6 @@ A first glance at the Lua reference manual indicates that standard Lua offers ve
 \paragraph{Software libraries}
 One of the goals of Lua is to provide a core that is as small as possible, and thus stripped of most non-essential parts. This means that standard Lua only offers basic Lua functionality~\cite[ch. 6]{manual:lua_reference_manual}, and anything else must be added through extra libraries. While there are many different extra libraries available for Lua, these tend to have less portability than the core itself, limiting our options if we want to run Lua on anything but the most common platforms. Additionally, Lua libraries are far less in number and diversity than those of its competitors, like for example Python.
 
-\section{Lua in embedded systems}
+\section{Lua in Embedded Systems}
 \label{ch:lua_in_embedded}
-
-\subsection{Motivation}
-
-
-\subsection{Feasibility}
-
-
-\subsection{Portability}
+TODO

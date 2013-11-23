@@ -1,6 +1,6 @@
 \chapter{Experimental Work}
 \label{ch:experimental_work}
-This chapter describes the experimental work done as part of the project. Since it is a rather incremental process, the goal, procedure and relevant results are described individually in each section.
+This chapter describes the experimental work done as part of the project. Since it is a rather incremental process, the goal, procedure and relevant results are described individually in each section. Additionally, to make reproduction of results possible, external references to the Lua code used for each part are included where relevant.
 
 \section{Implementation of a Runtime Support System for State Machines in Lua}
 \label{sec:impl_runtime_support}
@@ -17,11 +17,11 @@ It turns out to be quite simple to implement this system in Lua. The source code
 
 \subsection{Event Data Structure}
 \label{sec:impl_event}
-Even though Lua is not natively object-oriented, an event object is still easily implemented by use of the \emph{\_\_index} metamethod~\cite[13.4.1]{book:programming_in_lua_first}. We simply create a prototype for the event object with the desired fields (ID of state machine, event type and additional data) and methods (constructor, setters and getters). Inheritance is then enabled by creating an empty table/object, and setting its \emph{\_\_index} to reference the parent object's fields. Lua doesn't support encapsulation by conventional means~\cite[16.4]{book:programming_in_lua_first}, but rather by creating \emph{closures}. Encapsulated fields may then only be accessed by functions declared in the same local scope, as seen in the constructor method for event (\emph{Event:new}, Code snip.~\ref{code:event}). This is useful also in a state machine context to avoid inadvertent or even malicious tampering with event data or state of state machines. Combined, these approaches make the event data structure simple, safe and easy to use.
+Even though Lua is not natively object-oriented, an event object is still easily implemented by use of the \emph{\_\_index} metamethod~\cite[ch. 13.4.1]{book:programming_in_lua_first}. We simply create a prototype for the event object with the desired fields (ID of state machine, event type and additional data) and methods (constructor, setters and getters). Inheritance is then enabled by creating an empty table/object, and setting its \emph{\_\_index} to reference the parent object's fields. Lua doesn't support encapsulation by conventional means~\cite[ch. 16.4]{book:programming_in_lua_first}, but rather by creating \emph{closures}. Encapsulated fields may then only be accessed by functions declared in the same local scope, as seen in the constructor method for event (\emph{Event:new}, Code snip.~\ref{code:event}). This is useful also in a state machine context to avoid inadvertent or even malicious tampering with event data or state of state machines. Combined, these approaches make the event data structure simple, safe and easy to use.
 
 \subsection{Timer Object}
 \label{sec:impl_timer}
-The timer object (Code snip.~\ref{code:timer}) is created similarly to the event object described in Sect.~\ref{sec:impl_event} with respect to inheritance and encapsulation. Additionally, we need some way to keep track of time. As discussed in Sect.~\ref{sec:lua_and_state_machines}, Lua does not natively offer preemptive multitasking~\cite[2.6]{manual:lua_reference_manual}, so running an active timer on a separate thread is pretty much out of the question. However, for a simple runtime system, we may delegate the responsibility of measuring time to the scheduler component, and simply create a \emph{timestamp} for the desired activation time. This may decrease the timing accuracy of activation, but on the other hand also decreases overhead and complexity of the runtime system. In many cases it is not necessary or even desirable to preempt a running transition, but sufficient to wait until the transition has finished before scheduling the event following the timeout. This is however something that should be addressed when designing a more complete runtime system, and something that may prove challenging, as discussed in Sect.~\ref{sec:lua_and_state_machines}.
+The timer object (Code snip.~\ref{code:timer}) is created similarly to the event object described in Sect.~\ref{sec:impl_event} with respect to inheritance and encapsulation. Additionally, we need some way to keep track of time. As discussed in Sect.~\ref{sec:lua_and_state_machines}, Lua does not natively offer preemptive multitasking~\cite[ch. 2.6]{manual:lua_reference_manual}, so running an active timer on a separate thread is pretty much out of the question. However, for a simple runtime system, we may delegate the responsibility of measuring time to the scheduler component, and simply create a \emph{timestamp} for the desired activation time. This may decrease the timing accuracy of activation, but on the other hand also decreases overhead and complexity of the runtime system. In many cases it is not necessary or even desirable to preempt a running transition, but sufficient to wait until the transition has finished before scheduling the event following the timeout. This is however something that should be addressed when designing a more complete runtime system, and something that may prove challenging, as discussed in Sect.~\ref{sec:lua_and_state_machines}.
 
 The granularity of the timestamp is another issue that must be addressed, and is also discussed in Sect.~\ref{sec:lua_and_state_machines}. As a starting point, I chose to use \emph{os.time()}, even though it only offers \emph{second}-granularity. This is fortunately OK for the preliminary examples, and will be further addressed in Sect.~\ref{sec:running_on_micro}.
 
@@ -90,21 +90,21 @@ In addition to implementing the new state machines, I had to extend the runtime 
 
 Comparing the implementation of the request generator to the implementation of the Traffic Light Controller in Sect.~\ref{sec:impl_traffic_light}, we see that a lot of the code may be reused. We basically only need to change state and event definitions, implement any operations performed in transitions, and finally change the action-oriented list of transitions to reflect those of the current state machine. It requires only minimal work, and is not particularly error-prone because the code is simple and readable. This also applies to the other state machines implemented for this application, and implies that creating more complex applications, given the state machine template and a working runtime system, should be rather trivial.
 
-Running the two applications also produced the expected results: the client application periodically sends requests, these are handled by the server application, and the client application finally receives a response. The output produced is displayed in Fig.~\ref{fig:client_server_output}.
+Running the two applications also produced the expected results: the client application periodically sends requests, these are handled by the server application, and the client application finally receives a response. The output produced is displayed in Fig.~\ref{fig:client_output} and~\ref{fig:server_output}.
 
 \begin{figure}[htp]
 	\centering
-	\begin{subfigure}[b]{.4\textwidth}
-		\includegraphics[scale=0.45]{server_output}
-		\caption{Server output}
-	\end{subfigure}
+	\begin{minipage}{0.45\linewidth}
+		\includegraphics[scale=0.40]{server_output}
+		\caption{Server-side console output from running the client-server application.}
+		\label{fig:client_output}
+	\end{minipage}
 	\quad
-	\begin{subfigure}[b]{.4\textwidth}
-		\includegraphics[scale=0.45]{client_output}
-		\caption{Client output}
-	\end{subfigure}
-	\caption[Output of Client - Server test run (desktop)]{Console output from running the client and server applications.}
-	\label{fig:client_server_output}
+	\begin{minipage}{0.45\linewidth}
+		\includegraphics[scale=0.40]{client_output}
+		\caption{Client-side console output from running the client-server application.}
+		\label{fig:server_output}
+	\end{minipage}
 \end{figure}
 
 \FloatBarrier
@@ -118,7 +118,7 @@ Now that we have a working runtime system with a few example state machine -base
 
 \subsection{The LM3S9D92 Microcontroller}
 \label{sec:microcontroller}
-The Stellaris LM3S9D92 is a microcontroller produced by Texas Instruments\footnote{\url{http://www.ti.com/product/lm3s9d92}}. It is considered outdated and \emph{``not recommended for new designs''}, but since the purpose of these experiments is to look into how our software performs in a resource-constrained environment, this is not a problem. The microcontroller is considered a \emph{``high performance microcontroller with large memory''}~\cite{website:stellaris_micro}, roughly on par with microcontrollers like for example the Arduino Due. It has the following primary specifications:
+The Stellaris LM3S9D92 is a microcontroller produced by Texas Instruments\footnote{\url{http://www.ti.com/product/lm3s9d92}}. It is considered outdated and \emph{``not recommended for new designs''}, but since the purpose of these experiments is to look into how our software performs in a resource-constrained environment, this is not a problem. The microcontroller is considered a \emph{``high performance microcontroller with large memory''}~\cite{website:stellaris_micro}, roughly on par with microcontrollers like for example the Arduino Due\footnote{\url{http://arduino.cc/en/Main/arduinoBoardDue}}. It has the following primary specifications:
 
 \begin{itemize}
 	\item 32-bit ARM Cortex-M3 processor
@@ -181,7 +181,7 @@ Since the microcontroller quickly runs out of memory when running something as s
 
 \subsection{Analysis of Memory Use}
 \label{sec:memory_analysis}
-Fortunately, chapter 2 of \emph{Lua Programming Gems}~\cite{book:lua_programming_gems} offers some insight into which parts of our program could be using more memory than it really needs. Lua has some particularities in certain areas, especially when it comes to handling of tables and strings. A few interesting points mentioned in the book that are also relevant to the program in question, are listed below:
+Fortunately, chapter 2 of \emph{Lua Programming Gems}~\cite{chapter:lua_performance_tips} offers some insight into which parts of our program could be using more memory than it really needs. Lua has some particularities in certain areas, especially when it comes to handling of tables and strings. A few interesting points mentioned in the book that are also relevant to the program in question, are listed below:
 
 \paragraph{Closures} Variables and functions inside closures are created anew each time the closure is referenced. This means that the current scheme of encapsulating data inside closures creates new instances not only for the data contained, but for all the setters/getters and other functions declared in the same scope. This is likely to use a lot of extra memory, especially considering timer and event objects that may be instantiated very frequently.
 
@@ -202,7 +202,7 @@ Taking into account the various possible culprits of excessive memory use discus
 Weighing the ``safety'' of encapsulation against the increased memory use, I decided it would probably be best to remove it completely, which is likely to make the runtime system safer with respect to running out of memory. The primary changes required are listed below, and the interested reader may find the complete code on GitHub\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/client-server-noencap}}.
 
 \begin{itemize}
-	\item Instead of loading modules locally in each chunk, we can probably save some memory by making the \emph{main} chunk responsible for loading all required modules and making them globally available. This however likely to decrease performance significantly~\cite[Ch. 2]{book:lua_programming_gems}.
+	\item Instead of loading modules locally in each chunk, we can probably save some memory by making the \emph{main} chunk responsible for loading all required modules and making them globally available. This however likely to decrease performance significantly~\cite{chapter:lua_performance_tips}.
 	\item Instead of declaring all member functions inside the \emph{new} closure, make the data ``publicly'' available, and reference member functions by use of inheritance. This is also likely to decrease performance, as member functions are now accessed through the \emph{\_\_index} metamethod.
 \end{itemize}
 
@@ -215,9 +215,7 @@ In light of the memory troubles encountered in Sect.~\ref{sec:running_on_micro},
 
 \subsection{The Test Program}
 \label{sec:test_program}
-Measuring memory used by Lua is fortunately simple: the garbage collector provides a function, \emph{collectgarbage("count")} that returns the amount of memory currently used by Lua in KB. Additionally, the eLua modules use approximately 27KB~\cite{} of relatively stable memory.
-
-In order to test memory use for the runtime system, we simply design a state machine that periodically reads the current memory used, and logs this data somewhere. Since logging options are rather limited on the microcontroller, a better option is to aggregate the data over a period and send it over \gls{tcp} to a desktop application which handles the actual logging. In addition to measuring memory, we also want to simulate the microcontroller performing some useful task simultaneously, to make it more realistic. The chosen task, displayed in Code snip.~\ref{code:simple_task} is perhaps itself not very realistic in this context, but it serves the purpose of consuming some CPU time and memory. This task is simply implemented in its own state machine, running in parallel with the memory measurements.
+Measuring memory used by Lua is fortunately simple: the garbage collector provides a function, \emph{collectgarbage("count")} that returns the amount of memory currently used by Lua in KB. In order to test memory use for the runtime system, we simply design a state machine that periodically reads the current memory used, and logs this data somewhere. Since logging options are rather limited on the microcontroller, a better option is to aggregate the data over a period and send it over \gls{tcp} to a desktop application which handles the actual logging. In addition to measuring memory, we also want to simulate the microcontroller performing some useful task simultaneously, to make it more realistic. The chosen task, displayed in Code snip.~\ref{code:simple_task} is perhaps itself not very realistic in this context, but it serves the purpose of consuming some CPU time and memory. This task is simply implemented in its own state machine, running in parallel with the memory measurements.
 
 \begin{listing}[htp]
 \begin{luacode}
@@ -243,7 +241,7 @@ Additionally, the high maximum value is worth noticing. In order to check the ac
 
 \begin{figure}[htp]
 	\centering
-	\includegraphics[scale=0.90]{memory_use_first}
+	\includegraphics[scale=0.85]{memory_use_first}
 	\caption[Results of first memory overhead test]{Compared memory use of the test program running as a state machine application within the runtime system, and as a simple standalone program.}
 	\label{fig:memory_use_first}
 \end{figure}
@@ -256,7 +254,7 @@ Given the huge memory overhead observed during the testing in Sect.~\ref{sec:fir
 
 \paragraph{Reuse} During the lifetime of a state machine application, it is likely that a large number of timer and event objects will be created. As soon as the event or timer is consumed, it will likely be reclaimed by the garbage collector, but depending on the garbage collector's speed, this may not happen right away. Thus, we risk seeing temporary spikes in dynamic memory use, most likely similar to the spikes observed in Fig.~\ref{fig:memory_use_first}. As an alternative to this scheme, we can reduce the work that needs to be done by the garbage collector by reducing event and timer objects when creating new timers and events. The risk of seeing spikes is then probably reduced, however this is not likely to affect average memory use much. As a bonus, reusing events and timers is probably a little faster than instantiating new objects every time. It should be noted that the optimization gains from this approach depends on the state machine application being run. State machines that frequently consume one event and generates another save more than state machines that consume one event to generate many, which in turn may or may not generate new events.
 
-\paragraph{Strings} Another possible memory sink is the string concatenations performed by the message objects, as well as the state machine measuring memory use. These should however be the same for both test programs, since they send the same messages with an equal amount of data, but it is still worth looking into. Even if the relative difference in memory use may not be affected, we can still reduce average memory use for the runtime system. Depending on how fast these strings are reclaimed by the garbage collector, this reduction may be significant. The recommended approach is to use a table containing only the string values to be concatenated, and then use the \emph{table.concat} function. This should also give a significant performance increase for these tasks~\cite[Ch. 2]{book:lua_programming_gems}.
+\paragraph{Strings} Another possible memory sink is the string concatenations performed by the message objects, as well as the state machine measuring memory use. These should however be the same for both test programs, since they send the same messages with an equal amount of data, but it is still worth looking into. Even if the relative difference in memory use may not be affected, we can still reduce average memory use for the runtime system. Depending on how fast these strings are reclaimed by the garbage collector, this reduction may be significant. The recommended approach is to use a table containing only the string values to be concatenated, and then use the \emph{table.concat} function. This should also give a significant performance increase for these tasks~\cite{chapter:lua_performance_tips}.
 
 \paragraph{Coroutines} Since coroutines in Lua have their own stack, it is likely that events and timers passed between state machines and the scheduler will be created locally within each coroutine, and thus duplicated. In addition to temporarily using extra memory, this will reduce the effect we get from reusing event and timer objects. Also, using coroutines in itself likely creates some additional overhead, but this should not be significant.
 
@@ -264,7 +262,7 @@ Given the huge memory overhead observed during the testing in Sect.~\ref{sec:fir
 
 eLua additionally offers another alternative for handling garbage collection in situations where the remaining available memory is low, namely the \gls{egc}. This tool allows Lua to run garbage collection in some situations where this is normally not possible, for example when we reach a certain memory limit~\cite{website:elua_egc}. While this can be useful for avoiding running out of memory when we're already close to the limit, it doesn't really solve our problem, and is best used for safety measures.
 
-\paragraph{\gls{ltr}} The people working on eLua recognize the need for memory-effective software in resource constrained environments, and have developed \gls{ltr} to improve the situation for eLua. \emph{``\gls{ltr} is a Lua patch that significantly decreases the \gls{ram} usage of Lua scripts, thus making it possible to run large Lua programs on systems with limited \gls{ram}''}~\cite{website:elua_ltr}. The website advertises that enabling the patch should reduce the eLua memory overhead from around 27KB to only 5.42KB on the LM3S platform, however at the cost of performance. Unfortunately, a quick test showed that the \gls{ltr} patch was already enabled for my build of eLua. While having this patch enabled when we're struggling with memory use is obviously a good thing, it also implies that without this specific patch for eLua, making our runtime system fit into the \gls{ram} of the microcontroller would have been much more difficult.
+\paragraph{LTR} The people working on eLua recognize the need for memory-effective software in resource constrained environments, and have developed \gls{ltr} to improve the situation for eLua. \emph{``\gls{ltr} is a Lua patch that significantly decreases the \gls{ram} usage of Lua scripts, thus making it possible to run large Lua programs on systems with limited \gls{ram}''}~\cite{website:elua_ltr}. The website advertises that enabling the patch should reduce the eLua memory overhead from around 27KB to only 5.42KB on the LM3S platform, however at the cost of performance. Unfortunately, a quick test showed that the \gls{ltr} patch was already enabled for my build of eLua. While having this patch enabled when we're struggling with memory use is obviously a good thing, it also implies that without this specific patch for eLua, making our runtime system fit into the \gls{ram} of the microcontroller would have been much more difficult.
 
 \subsection{Measurements on the Optimized Runtime System}
 \label{sec:opt_rts}
@@ -282,7 +280,7 @@ The results of running these optimized programs are displayed in Fig.~\ref{fig:m
 
 \begin{figure}[htp]
 	\centering
-	\includegraphics[scale=0.90]{memory_use_second}
+	\includegraphics[scale=0.85]{memory_use_second}
 	\caption[Results of second memory overhead test]{Compared memory use of the test program running as a state machine application within the optimized runtime system.}
 	\label{fig:memory_use_second}
 \end{figure}
@@ -291,7 +289,7 @@ While we see a definite improvement over the initial system, the memory overhead
 
 \subsection{Tinkering With the Garbage Collector}
 \label{sec:gc_tinkering}
-The capabilities of the garbage collector in Lua are briefly discussed in Sect.~\ref{sec:memory_analysis} and ~\ref{sec:more_optimization}. Given the results observed in Sect.~\ref{sec:opt_rts}, it seems likely that by changing some of the garbage collectors parameters, we can make it more aggressive and hopefully reduce average memory use. In addition to the possibility for manual control (collect, stop, restart), the Lua garbage collector has two controllable parameters: step multiplier and pause~\cite[Ch. 2.10]{manual:lua_reference_manual}.
+The capabilities of the garbage collector in Lua are briefly discussed in Sect.~\ref{sec:memory_analysis} and ~\ref{sec:more_optimization}. Given the results observed in Sect.~\ref{sec:opt_rts}, it seems likely that by changing some of the garbage collectors parameters, we can make it more aggressive and hopefully reduce average memory use. In addition to the possibility for manual control (collect, stop, restart), the Lua garbage collector has two controllable parameters: step multiplier and pause~\cite[ch. 2.10]{manual:lua_reference_manual}.
 
 \paragraph{Pause} The pause parameter decides how long the garbage collector should wait before starting a new collection cycle. Decreasing the parameter makes the garbage collector less aggressive, while increasing makes it more. The default value is 200, and values smaller than 100 means there is no pause. A quick check of this value in the context of eLua shows that it is already set to 110, which should make the garbage collector quite aggressive. It is therefore unlikely that we have much to gain from further decreasing its value.
 
@@ -303,7 +301,7 @@ Running the optimized (with coroutines) memory-measurement application with diff
 
 \begin{figure}[htp]
 	\centering
-	\includegraphics[scale=0.90]{memory_use_opt}
+	\includegraphics[scale=0.85]{memory_use_opt}
 	\caption[Results of tinkering with the garbage collector for the state machine application]{Compared memory use of the state machine system for different values of the garbage collector's step multiplier parameter.}
 	\label{fig:memory_use_opt}
 \end{figure}
@@ -360,22 +358,22 @@ Running the test code described in the previous section, we use values for task\
 
 Comparing the results from running the state machine test application and the test program, we get the results displayed in Fig.~\ref{fig:performance_overhead_rel}. We see that for smallest tasks tested, the state machine application takes almost 5 times as long to complete the task. It is no surprise that the overhead is significant for small tasks. However, it is very surprising to see that for tasks bigger than approximately 1ms, the runtime system is actually more efficient. This seems impossible...
 
-TODO
+TODO: why?
 
 \begin{figure}[htp]
 	\centering
-	\includegraphics[scale=0.90]{performance_overhead_rel}
+	\includegraphics[scale=0.85]{performance_overhead_rel}
 	\caption[Results of performance overhead test, relative comparison]{Relative comparison of time spent running the simple task, where the value on the y-axis represents the time spent by the test program divided by the time spent by the state machine application.}
 	\label{fig:performance_overhead_rel}
 \end{figure}
 
-Adjusting the results for number of repeats and task size, we get the relative amount of overhead compared to the amount of useful work done. Figure~\ref{fig:performance_overhead_abs} shows the results of these computations. WE see that for the special case where we only perform the given task once, the processing overhead is significant for small tasks, with up to 5/6 of the processing time being spent on runtime system overhead. However, it is more realistic to look at the cases where a task is repeated over time. The results barely change at all when we increase the number of task repeats from 50, and while the processing overhead is still quite high for small tasks (up to 2/3), it is much smaller than when running a task once. For tasks taking around 1ms or more to complete, this processing overhead becomes insignificant.
+Adjusting the results for number of repeats and task size, we get the relative amount of overhead compared to the amount of useful work done. Figure~\ref{fig:performance_overhead_abs} shows the results of these computations. We see that for the special case where we only perform the given task once, the processing overhead is significant for small tasks, with up to 5/6 of the processing time being spent on runtime system overhead. However, it is more realistic to look at the cases where a task is repeated over time. The results barely change at all when we increase the number of task repeats from 50, and while the processing overhead is still quite high for small tasks (up to 2/3), it is much smaller than when running a task once. For tasks taking around 1ms or more to complete, this processing overhead becomes insignificant.
 
 In addition to showing processing overhead, the results in Fig.~\ref{fig:performance_overhead_abs} give us an indication of how frequently the system is able to handle tasks of various sizes before these tasks start to become delayed in time. The system will for example not be able to handle scheduling tasks that take 100$\mu$s with a frequency of 1/5000, because even though there is plenty of time to complete 5000 tasks taking 100$\mu$s in one second, we also have to account for the runtime system overhead, which in this case is almost 250$\mu$s per 100$\mu$s of useful work. This means that a state machine task taking 100$\mu$s will in reality use around 350$\mu$s of processing time, meaning it can be scheduled at most with a frequency of roughly 1/2857 to avoid experiencing delay.
 
 \begin{figure}[htp]
 	\centering
-	\includegraphics[scale=0.90]{performance_overhead_abs}
+	\includegraphics[scale=0.85]{performance_overhead_abs}
 	\caption[Results of performance overhead test, absolute comparison]{Measurements of overhead time required when running the simple task, where the value on the y-axis represents the time spent on overhead by the runtime system for each 100$\mu$s of useful work.}
 	\label{fig:performance_overhead_abs}
 \end{figure}
@@ -411,7 +409,7 @@ The compared results are displayed in Fig.~\ref{fig:performance_overhead_comp}. 
 
 \begin{figure}[htp]
 	\centering
-	\includegraphics[scale=0.90]{performance_overhead_comp}
+	\includegraphics[scale=0.85]{performance_overhead_comp}
 	\caption[Results of performance comparison with the first version of the RTS]{Compared times required to run a task of the given size 100 times with the first RTS, the optimized RTS and without RTS support.}
 	\label{fig:performance_overhead_comp}
 \end{figure}
@@ -423,9 +421,9 @@ As a final way of testing the runtime system, a more complete and realistic stat
 
 \paragraph{Lack of Appropriate Peripherals} This is not directly related to the runtime system, but to the choice of microcontroller we use for testing. The EKK-LM3S9D92 evaluation kit unfortunately does not have any kind of sensors attached, so the only peripherals we may use in our application is a single LED, a single pushbutton and the Ethernet interface. This limits our options for developing a more complete example application.
 
-\paragraph{Limited Peripheral Support in eLua} While working with the TCP/IP Ethernet interface on the LM3S platform is well supported by eLua, accessing the LED and pushbutton proved more difficult. eLua does not offer any separate modules for working with these peripherals, and digging through the limited GPIO documentation provided little insight as to if or how we may use the GPIO module for this purpose. Another option we have is to write our own driver module for the pushbutton and LED in C, and bind this module to Lua functions. Interfacing with C code is considered one of Lua's major strengths~\cite{}, so this should not be too difficult. However, in order to use the driver module, we will also most likely have to build it into the eLua image on the microcontroller, which leads to even more extra work. The purpose of our runtime system is after all to provide a simple interface for application development, and these advantages are quickly diminished when the developers have to dig into C code for peripheral support and building their own version the whole support system.
+\paragraph{Limited Peripheral Support in eLua} While working with the TCP/IP Ethernet interface on the LM3S platform is well supported by eLua, accessing the LED and pushbutton proved more difficult. eLua does not offer any separate modules for working with these peripherals, and digging through the limited GPIO documentation provided little insight as to if or how we may use the GPIO module for this purpose. Another option we have is to write our own driver module for the pushbutton and LED in C, and bind this module to Lua functions. Interfacing with C code is considered one of Lua's major strengths~\cite{inproceedings:the_evolution_of_lua}, so this should not be too difficult. However, in order to use the driver module, we will also most likely have to build it into the eLua image on the microcontroller, which leads to even more extra work. The purpose of our runtime system is after all to provide a simple interface for application development, and these advantages are quickly diminished when the developers have to dig into C code for peripheral support and building their own version the whole support system.
 
-\paragraph{No Support for Parallelism} Without support for real parallelism in Lua, it is difficult to create an application that serves both as an active client and a server. If we want to continuously do useful work in our application, we are unable to listen for events and signals from external sources, as mentioned in Sect.~\ref{sec:runtime_system_issues}. One option is to periodically listen for external signals for a short time, but depending on how often and how long we listen, we risk missing a lot of the signals. Additionally, performing this task is likely to provide a relatively large amount of overhead, depending on how often external signals are actually received. In order to handle proper concurrency, we probably have to extend our runtime system with some kind of real parallelism, which may prove challenging in an embedded environment.
+%\paragraph{Support for Parallelism} Without support for real parallelism in Lua, it is difficult to create an application that serves both as an active client and a server. If we want to continuously do useful work in our application, we are unable to listen for events and signals from external sources, as mentioned in Sect.~\ref{sec:runtime_system_issues}. One option is to periodically listen for external signals for a short time, but depending on how often and how long we listen, we risk missing a lot of the signals. Additionally, performing this task is likely to provide a relatively large amount of overhead, depending on how often external signals are actually received. In order to handle proper concurrency, we probably have to extend our runtime system with some kind of real parallelism, which may prove challenging in an embedded environment.
 
-Simply put, there are some significant challenges that must be overcome in order to be able to develop more than simple applications within our runtime system. The choice of eLua as the underlying platform for the Lua interpreter has some impact on this, as it imposes some limitations on our Lua environment, especially with respect parallelism. But considering that eLua is still only in version 0.9, this might improve in the future.
+Simply put, there are some significant challenges that must be overcome in order to be able to develop more than simple applications within our runtime system. The choice of eLua as the underlying platform for the Lua interpreter has some impact on this, as it imposes some limitations on our Lua environment. But considering that eLua is still only in version 0.9, this might improve in the future. However, for a production-quality state machine runtime system, it might be safer to develop a separate and more specialized Lua platform for embedded systems.
 
