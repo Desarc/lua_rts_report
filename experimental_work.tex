@@ -115,7 +115,7 @@ Now that we have a working runtime system with a few example state machine -base
 
 \subsection{The LM3S9D92 Microcontroller}
 \label{sec:microcontroller}
-The Stellaris LM3S9D92 is a microcontroller produced by Texas Instruments\footnote{\url{http://www.ti.com/product/lm3s9d92}}. It is considered outdated and \emph{``not recommended for new designs''}, but since the purpose of these experiments is to look into how our software performs in a resource-constrained environment, this is not a problem. The microcontroller was considered a \emph{``high performance microcontroller with large memory''}~\cite{website:stellaris_micro} when it was released, and has the following primary specifications:
+The Stellaris LM3S9D92 is a microcontroller produced by Texas Instruments\footnote{\url{http://www.ti.com/product/lm3s9d92}}. It is considered outdated and \emph{``not recommended for new designs''}, but since the purpose of these experiments is to look into how our software performs in a resource-constrained environment, this is not a problem. The microcontroller is considered a \emph{``high performance microcontroller with large memory''}~\cite{website:stellaris_micro}, roughly on par with microcontrollers like for example the Arduino Due. It has the following primary specifications:
 
 \begin{itemize}
 	\item 32-bit ARM Cortex-M3 processor
@@ -234,53 +234,150 @@ For comparison, we create a simple program performing roughly the same tasks as 
 
 \subsection{Results of the First Comparison}
 \label{sec:first_comparison}
-Figure~\ref{fig:memory_use_first} shows a graph representation of the memory used as a function of time. It is clear that the memory overhead of running this program as a state machine application is significant. The simple program uses only 14,8KB on average with a maximum of 17,3KB, while the state machine application uses 55,6KB of dynamic memory on average, with a maximum of over 66KB in this short period, almost 4 times as much. The high maximum is important to notice, because when we add the ``invisible'' overhead of eLua (27KB), the total dynamic memory in use is actually around 93KB, which is dangerously close to the total amount of dynamic memory available on the microcontroller, which is 96KB. Furthermore, the huge difference in average memory used implies that the overhead of the runtime system could be as high as 40KB, close to half of the available dynamic memory, regardless of which state machine application is implemented.
+Figure~\ref{fig:memory_use_first} shows a graph representation of the memory used as a function of time. It is clear that the memory overhead of running this program as a state machine application is significant. The simple program uses only 14,7KB on average with a maximum of 17,3KB, while the state machine application uses 55,6KB of dynamic memory on average, with a maximum of over 66KB in this short period, almost 4 times as much. The huge difference in average memory used implies that the overhead of the runtime system could be as high as 40KB, close to half of the available dynamic memory, regardless of which state machine application is implemented.
+
+Additionally, the high maximum value is worth noticing. In order to check the actual available dynamic memory, I reran the encapsulated version of the runtime system from Sect.~\ref{sec:impl_runtime_support} with the state machines for measuring and logging memory use\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/mem-encap}}. Unsurprisingly the program did not run for very long before running out of memory, but the interesting part was that the memory readings it managed to log before stopping, indicated that the program ran out of memory at around 68KB. The last received reading was 63,8KB, but we should assume that memory use at the time of the ``crash'' was higher, and judging by the previous readings, an increase of 3-4KB in the short time period seems likely. This implies that the actual maximum limit for memory use is somewhere around 68KB (indicated by the magenta-colored line in Fig.~\ref{fig:memory_use_first}), meaning that a measured value of 66KB is a little too close to this limit for ``comfort''. The reason for this limit being around 68KB, which is quite far from the microcontroller capability of 96KB \gls{ram}, is likely that some of the memory is used for controlling I/O peripherals that are not part of eLua, such as the USB interface.
 
 \begin{figure}[htp]
 	\centering
 	\includegraphics[scale=0.90]{memory_use_first}
-	\caption[Result of first overhead comparison test]{Compared memory use of the test program running as a state machine application within the runtime system, and as a simple standalone program.}
+	\caption[Results of first memory overhead test]{Compared memory use of the test program running as a state machine application within the runtime system, and as a simple standalone program.}
 	\label{fig:memory_use_first}
 \end{figure}
 
 In order to justify the use of Lua state machine applications in embedded environments, we need to find out if it is possible to further reduce the memory overhead produced by the runtime system.
 
-\subsection{The Memory Optimized State Machine Runtime System}
-\label{sec:optimized_rts}
-Given the huge memory overhead observed during the testing in Sect.~\ref{sec:first_comparison}, we most likely have to make some drastic changes to the code of our runtime system. In Sect.~\ref{sec:memory_analysis}, various potential issues increasing dynamic memory use are discussed. The issue of closures has already been addressed, so the next step is to attempt more reuse of objects.
+\subsection{Further Optimizations of Memory Use}
+\label{sec:more_optimization}
+Given the huge memory overhead observed during the testing in Sect.~\ref{sec:first_comparison}, we most likely have to make some drastic changes to the code of our runtime system. In Sect.~\ref{sec:memory_analysis}, various potential issues increasing dynamic memory use are discussed. The issue of closures has already been addressed, so the next step to explore the other options.
 
 \paragraph{Reuse} During the lifetime of a state machine application, it is likely that a large number of timer and event objects will be created. As soon as the event or timer is consumed, it will likely be reclaimed by the garbage collector, but depending on the garbage collector's speed, this may not happen right away. Thus, we risk seeing temporary spikes in dynamic memory use, most likely similar to the spikes observed in Fig.~\ref{fig:memory_use_first}. As an alternative to this scheme, we can reduce the work that needs to be done by the garbage collector by reducing event and timer objects when creating new timers and events. The risk of seeing spikes is then probably reduced, however this is not likely to affect average memory use much. As a bonus, reusing events and timers is probably a little faster than instantiating new objects every time. It should be noted that the optimization gains from this approach depends on the state machine application being run. State machines that frequently consume one event and generates another save more than state machines that consume one event to generate many, which in turn may or may not generate new events.
 
 \paragraph{Strings} Another possible memory sink is the string concatenations performed by the message objects, as well as the state machine measuring memory use. These should however be the same for both test programs, since they send the same messages with an equal amount of data, but it is still worth looking into. Even if the relative difference in memory use may not be affected, we can still reduce average memory use for the runtime system. Depending on how fast these strings are reclaimed by the garbage collector, this reduction may be significant. The recommended approach is to use a table containing only the string values to be concatenated, and then use the \emph{table.concat} function. This should also give a significant performance increase for these tasks~\cite[Ch. 2]{book:lua_programming_gems}.
 
-\paragraph{Coroutines} 
+\paragraph{Coroutines} Since coroutines in Lua have their own stack, it is likely that events and timers passed between state machines and the scheduler will be created locally within each coroutine, and thus duplicated. In addition to temporarily using extra memory, this will reduce the effect we get from reusing event and timer objects. Also, using coroutines in itself likely creates some additional overhead, but this should not be significant.
+
+\paragraph{Garbage Collection} Tuning the garbage collector to be more aggressive is another way to reduce memory use, however this also happens at the cost of performance. However, looking at the results in Fig.~\ref{fig:memory_use_first}, the frequent maxima and minima as well as the large relative difference between them, imply that the garbage collector is already being quite aggressive. This also makes sense, considering the amount of new memory that is frequently allocated when new event and timer objects are created.
+
+eLua additionally offers another alternative for handling garbage collection in situations where the remaining available memory is low, namely the \gls{egc}. This tool allows Lua to run garbage collection in some situations where this is normally not possible, for example when we reach a certain memory limit~\cite{website:elua_egc}. While this can be useful for avoiding running out of memory when we're already close to the limit, it doesn't really solve our problem, and is best used for safety measures.
+
+\paragraph{\gls{ltr}} The people working on eLua recognize the need for memory-effective software in resource constrained environments, and have developed \gls{ltr} to improve the situation for eLua. \emph{``\gls{ltr} is a Lua patch that significantly decreases the \gls{ram} usage of Lua scripts, thus making it possible to run large Lua programs on systems with limited \gls{ram}''}~\cite{website:elua_ltr}. The website advertises that enabling the patch should reduce the eLua memory overhead from around 27KB to only 5.42KB on the LM3S platform, however at the cost of performance. Unfortunately, a quick test showed that the \gls{ltr} patch was already enabled for my build of eLua. While having this patch enabled when we're struggling with memory use is obviously a good thing, it also implies that without this specific patch for eLua, making our runtime system fit into the \gls{ram} of the microcontroller would have been much more difficult.
+
+\subsection{Measurements on the Optimized Runtime System}
+\label{sec:opt_rts}
+Considering the possibilities for further optimization discussed in Sect.~\ref{sec:more_optimization}, I decided to try a few different options, and see how they affected memory use. First, I changed all handling of string concatenation to the recommended approach with \emph{table.concat}. Next, I made state machines attempt reuse of event and timer objects whenever possible, creating new ones only when they had to. The full code for this optimized system is available on GitHub\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/mem-opt}}. With some luck, these changes would significantly reduce and and stabilize memory use. Additionally, I created a version of the runtime system without coroutines\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/no-coroutine}} as the way of handing execution control to a state machine, to see how much of an impact this would have on memory use.
+
+The results of running these optimized programs are displayed in Fig.~\ref{fig:memory_use_second}, and fortunately show some improvements. Some observations are listed below:
+
+\begin{itemize}
+	\item For the optimized system, average memory use has been reduced from 55,6KB to 48,3KB, and the maximum from 66KB to 55,7KB. This is an improvement of roughly 13\%, and puts us at a more comfortable distance from the maximum limit (indicated by the magenta line).
+	\item The optimized system without coroutines is slightly sparser, with an average memory use of 44,3KB.
+	\item With the same optimizations applied, the comparison program actually performs slightly worse on average, but the difference is very small.
+	\item Since fewer new objects are created (and fewer old ones are becoming obsolete), the garbage collector activity is significantly decreased, to the point where we can clearly see the garbage collection cycles. This likely gives a performance boost to our system, since normal execution will be interrupted less.
+	\item Average memory use is still more than 3 times higher for the state machine application.
+\end{itemize}
+
+\begin{figure}[htp]
+	\centering
+	\includegraphics[scale=0.90]{memory_use_second}
+	\caption[Results of second memory overhead test]{Compared memory use of the test program running as a state machine application within the optimized runtime system.}
+	\label{fig:memory_use_second}
+\end{figure}
+
+While we see a definite improvement over the initial system, the memory overhead is still quite high, and may potentially severely limit the types of applications we are able to develop. On the bright side, the decreased activity of the garbage collector gives us more room for tinkering with its parameters, with the potential of reducing average and peak memory use. The next section will explore these options further.
+
+\subsection{Tinkering With the Garbage Collector}
+\label{sec:gc_tinkering}
+The capabilities of the garbage collector in Lua are briefly discussed in Sect.~\ref{sec:memory_analysis} and ~\ref{sec:more_optimization}. Given the results observed in Sect.~\ref{sec:opt_rts}, it seems likely that by changing some of the garbage collectors parameters, we can make it more aggressive and hopefully reduce average memory use. In addition to the possibility for manual control (collect, stop, restart), the Lua garbage collector has two controllable parameters: step multiplier and pause~\cite[Ch. 2.10]{manual:lua_reference_manual}.
+
+\paragraph{Pause} The pause parameter decides how long the garbage collector should wait before starting a new collection cycle. Decreasing the parameter makes the garbage collector less aggressive, while increasing makes it more. The default value is 200, and values smaller than 100 means there is no pause. A quick check of this value in the context of eLua shows that it is already set to 110, which should make the garbage collector quite aggressive. It is therefore unlikely that we have much to gain from further decreasing its value.
+
+\paragraph{Step Multiplier} The step multiplier parameter roughly decides how much work the garbage collector does with each incremental step. This means that increasing its value makes the garbage collector more aggressive, and like the pause parameter its default value is 200. A quick check shows that this is also the default value used by eLua, meaning there could be potential for some gain by increasing it.
+
+\paragraph{Manual Control} While manual control has the potential to reduce memory use at the times when it's really needed, this probably requires knowledge of the specific application running within the runtime system, making it hard to know exactly when these times are. An option could be to experiment with the \gls{egc} mentioned in Sect.~\ref{sec:more_optimization}, but the results are hard to predict. Worst case, it actually provides us with more problems, such as getting stuck in an eternal loop of garbage collection.
+
+Running the optimized (with coroutines) memory-measurement application with different values for the step multiplier provides the results displayed in Fig.~\ref{fig:memory_use_opt}. Increasing the step multiplier from 200 to 600 decreases average memory use from 48,3KB to 42,5KB and peak memory use from 56KB to 45KB. Further increases of the step multiplier have a significantly smaller effect on the memory use, and we should keep in mind that performance decreases when the garbage collector has to do more work. Overall, dynamic memory use is a lot more stable, and we are getting a little closer to an acceptable amount of overhead. However, at this point I've run out of ideas on how to improve the runtime system further, so we have to accept a memory overhead of roughly 27KB for now.
+
+\begin{figure}[htp]
+	\centering
+	\includegraphics[scale=0.90]{memory_use_opt}
+	\caption[Results of tinkering with the garbage collector for the state machine application]{Compared memory use of the state machine system for different values of the garbage collector's step multiplier parameter.}
+	\label{fig:memory_use_opt}
+\end{figure}
+
+\subsection{Some Additional Notes on Memory Overhead}
+\label{sec:mem_overhead_notes}
+While the previous sections offer some insights into potential memory problems we may encounter with a Lua-based state machine system in an embedded environment, we should keep in mind that the tests and measurements performed are quite specific, and over a relatively short period of time. Results may vary depending on the actual application that is run within the context of the runtime system, and for a large number of applications, the added memory overhead is not likely to be a problem given that the memory use is fairly stable.
+
+However, the most important point to consider is probably that the runtime system used for these measurements is just the bare minimum that is required for functional use. With a more complete, production-quality system, we would probably like to add quite a few extra features to the runtime system, which may increase overhead with respect to both dynamic memory use and performance. We already experienced that a single concept such as encapsulation of object data increased memory use so dramatically that we would quickly run out, which implies that some of the additional features we might like in a production-quality system may not be achievable in this context.
+
+The specific application should also be considered when comparing to the test program running without a runtime system. In the tests performed in the previous sections, our application is very simple, meaning the relative memory overhead becomes quite big. In Sect.~\ref{sec:opt_rts}, we saw that the same optimizations applied to the test program did not improve memory usage, however there is likely to be more room for such optimizations in a more complex program. On the other hand, complex programs are generally more difficult to optimize, which speaks in favor of the state machine -based system. When developing with state machines, most of the optimization will be done in the runtime system, making things simpler for the application developer.
+
+There are some additional ways to reduce the memory overhead of our runtime system, but they require more advanced adaptations. The eLua FAQ suggests that we can precompile our Lua code to bytecode and build it directly into the \gls{rom} file system of eLua~\cite{website:elua_faq}. This is likely to provide significant results, since we may then put all our prototypes in \gls{rom}. However, if application developers want to put the prototypes for their state machines in \gls{rom}, this approach requires them to be able to build eLua, which may require a lot of extra work. Another option is to implement the memory-heavy parts of the runtime system in C. This is a likely solution for a production-quality system, but goes beyond the scope of this project.
 
 \FloatBarrier
-\section{Measurements of Performance Overhead}
-\begin{listing}[htp]
-\begin{luacode}
-local task_size = 10
-local task_repeats = 1
+\section{Performance Overhead of the Runtime System}
+\label{sec:performance_overhead}
+So far in our experiments, we have only considered how well our runtime system performs with respect to memory use. A lot of the steps that were taken to reduce memory overhead in Sect.~\ref{sec:memory_use} and~\ref{sec:memory_overhead_measure} are likely to decrease performance in our application, and it is probably a good idea to find out roughly how much. Additionally, like with memory, a speed comparison with a non state machine application to measure the performance overhead is appropriate. The following sections describe the results from these tests.
 
-local function busy_work()
-	for i=1,task_size do
-		q = i*i
-	end
-end
+\subsection{The Test Code}
+\label{sec:performance_test_code}
+There are many ways of measuring performance in software. A typical way is to run benchmarks with a set algorithms, but this is more suited for testing language implementations or hardware. Another approach is performance profiling, which may be done in Lua by use of the \emph{debug} and \emph{os} libraries, however since the \emph{os} library is not available on the microcontroller, this may prove difficult to achieve. Instead, we may use a simpler scheme: create a real or fictional task, such as the one used for memory overhead testing, and see how the runtime system performs compared to a non state machine program when running this task several times in succession. Additionally, we may do this for variable task sizes, to see how big the impact of the performance overhead is relative to how long it takes to perform the task. Using the simple task described in Code snip.~\ref{code:simple_task}, we design a state machine that continuously runs this task while measuring the time it takes between completions. The full code used for this test is available on GitHub\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/calc-overhead-opt}}.
 
-local start_time = tmr.read(tmr.SYS_TIMER)
+\subsection{Measuring Performance Overhead of the Runtime System}
+\label{sec:performance_overhead_measure}
+Running the test code described in the previous section, we use values for task\_size ranging from 10 to 500000, and values for task\_repeats ranging from 1 to 500. Additionally, results are calculated by averaging the measurements from 10 runs for each set of parameters. Table~\ref{tab:task_size_time} gives an overview of how long it takes to run a task on the microcontroller, given the task\_size parameter.
 
-for j=1,task_repeats do
-	busy_work()
-end
+\begin{table}
+	\centering
+	\begin{tabulary}{\textwidth}{| C | C | C |}
+		\hline
+		task\_size & Time ($\mu$s) & Adjusted time ($\mu$s) \\
+		\hline
+		10 & 235 & 111 \\
+		\hline
+		50 & 623 & 498 \\
+		\hline
+		100 & 1108 & 983 \\
+		\hline
+		500 & 4963 & 4838 \\
+		\hline
+		1000 & 9781 & 9657 \\
+		\hline
+		5000 & 48363 & 48238 \\
+		\hline
+		10000 & 96578 & 96453 \\
+		\hline
+		50000 & 482358 & 482233 \\
+		\hline
+	\end{tabulary}
+	\caption{Values for task\_size and their respective execution times. The adjusted time represents the actual time the task takes, when we subtract the time it takes to read timer values, approximately 125 $\mu$s.}
+	\label{tab:task_size_time}
+\end{table}
 
-local delta = tmr.read(tmr.SYS_TIMER) - start_time
-print("Delta: "..tostring(delta))
-\end{luacode}
-	\caption{Lua code used for overhead testing}
-	\label{code:overhead}
-\end{listing}
+Comparing the results from running the state machine test application and the test program, we get the results displayed in Fig.~\ref{fig:performance_overhead_rel}. We see that for smallest tasks tested, the state machine application takes almost 5 times as long to complete the task. It is no surprise that the overhead is significant for small tasks. However, it is very surprising to see that for tasks bigger than approximately 1ms, the runtime system is actually more efficient. This seems impossible...
 
-\section{Measurements of Application Performance}
-\label{sec:performance_measure}
+TODO
+
+\begin{figure}[htp]
+	\centering
+	\includegraphics[scale=0.90]{performance_overhead_rel}
+	\caption[Results of performance overhead test, relative comparison]{Relative comparison of time spent running the simple task, where the value on the y-axis represents the time spent by the test program divided by the time spent by the state machine application.}
+	\label{fig:performance_overhead_rel}
+\end{figure}
+
+Adjusting the results for number of repeats and task size, we get the relative amount of overhead compared to the amount of useful work done. Figure~\ref{fig:performance_overhead_abs} shows the results of these computations. 
+
+
+\begin{figure}[htp]
+	\centering
+	\includegraphics[scale=0.90]{performance_overhead_abs}
+	\caption[Results of performance overhead test, absolute comparison]{Measurements of overhead time required when running the simple task, where the value on the y-axis represents the time spent on overhead by the runtime system for each 100$\mu$s of useful work.}
+	\label{fig:performance_overhead_abs}
+\end{figure}
+
+
+
+\subsection{Measuring Comparative Performance of the Optimized Runtime System}
+\label{sec:comp_performance_overhead}
 
