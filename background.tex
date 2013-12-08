@@ -4,29 +4,27 @@ This chapter offers some summaries of and references to background material and 
 
 \section{The Lua Programming Language}
 \label{sec:lua_language}
-TODO: rewrite
 
-The Lua programming language is a dynamic, multi-paradigm scripting language developed at the \gls{puc-rio}. It is implemented and maintained by a team of only three people: professors Roberto Ierusalimschy and Waldemar Celes of \gls{puc-rio}, and researcher Luiz Henrique de Figueiredo of \gls{impa}. Lua is designed as an embeddable extension language, and considered to be one of the leading scripting languages in game development~\cite{inproceedings:the_evolution_of_lua}. A probable reason for Lua's popularity is that the designers set some goals for the language's design and implementation that have been respected from the beginning: Lua should be embeddable, simple, efficient, portable and lightweight~\cite{article:the_implementation_of_lua}.
+The Lua programming language is a dynamic, multi-paradigm scripting language developed at the \gls{puc-rio}. It is implemented and maintained by a team of only three people: professors Roberto Ierusalimschy and Waldemar Celes of \gls{puc-rio}, and researcher Luiz Henrique de Figueiredo of \gls{impa}. Lua is designed as an embeddable extension language, and considered to be one of the leading scripting languages in game development~\cite{inproceedings:the_evolution_of_lua}. A likely reason for Lua's popularity is that the designers set some goals for the language's design and implementation that have been respected from the beginning: Lua should be embeddable, simple, efficient, portable and lightweight~\cite{article:the_implementation_of_lua}.
 
-Lua has a few properties that, when combined, makes it quite unique in the programming language world. Some of these properties are:
+This section only aims to give a general impression of the Lua programming language.  Below, some of the key properties of Lua are listed, to give an overview of the programming language's capabilities.
 \begin{itemize}
-	\item Lua is dynamically typed and interpreted, similar to e.g. Python.
-	\item A single kind of data structure, which is an associative array (or simply \emph{table} in Lua).
-	\item A simple and minimalist syntax~\cite[ch. 9]{manual:lua_reference_manual}. However, this not makes Lua itself simplistic, because of the support for meta-mechanisms \cite{manual:lua_reference_manual}.
+	\item Lua is dynamically typed and interpreted, similar to languages like Python and Ruby.
+	\item Lua uses only a single kind of data structure, which is an associative array (or simply \emph{table} in Lua). Additionally, all values in Lua are \emph{first-class} values, meaning they can be passed between functions and scopes, and stored in variables~\cite[ch. 2.2]{manual:lua_reference_manual}.
+	\item Lua has simple and minimalist syntax~\cite[ch. 9]{manual:lua_reference_manual}. However, this does not necessarily make Lua itself simplistic, because of the meta-mechanisms that provide implicit support for many additional paradigms~\cite[ch. 2.8]{manual:lua_reference_manual}.
 	\item Lua code is compiled to bytecode, and run in the register-based Lua \gls{vm}. This register-based \gls{vm} is part of what makes Lua efficient~\cite{article:the_implementation_of_lua}.
-	\item The Lua \gls{vm} is written in \gls{clean-c}, and additionally offers quick and easy integration with C libraries.
-	\item The Lua core only contains a few standard libraries. The reason for this is to avoid bloating, and decreasing the cost of embedding Lua. Extensions may be added as user libraries~\cite{article:the_implementation_of_lua}.
-	\item Lua supports collaborative (non-preemptive) multithreading in the form of coroutines~\cite[ch. 2.6]{manual:lua_reference_manual}.
-	\item Included in Lua's tiny core is an incremental mark-and-sweep garbage collector, which has a few advantages (no extra overhead, simple handling of cycles) and disadvantages (possible execution pause during collection).
-	\item Lua also supports the following concepts: extensible semantics, anonymous functions, full lexical scoping and proper tail calls~\cite{inproceedings:the_evolution_of_lua}.
+	\item The Lua \gls{vm} is written in \gls{clean-c}, and additionally offers quick and easy integration with C libraries. This is primarily what makes Lua portable.
+	\item The Lua core only contains a few standard libraries. The reason for this is to avoid bloating, and decreasing the cost of embedding Lua. Extensions may be added as user libraries~\cite{article:the_implementation_of_lua}. Not including a lot of standard libraries goes a long way in keeping the memory footprint of Lua low.
+	\item Lua supports collaborative (non-preemptive) multitasking in the form of coroutines~\cite[ch. 2.6]{manual:lua_reference_manual}. While this is not considered ``real'' multitasking (everything is done sequentially even on an application-level), this concept can be used to implement multitasking behavior by explicit context switching. For example, we can design a program to continuously run a working loop while frequently checking for input, without having to worry about interrupts. 
+	\item Included in Lua's tiny core is an incremental mark-and-sweep garbage collector, which has a few advantages (no extra overhead, simple handling of cycles) and disadvantages (possible execution pause during collection) compared to other common types of garbage collectors. Automatic memory handling greatly reduces the difficulty of using the programming language for less experienced programmers.
 	\item Lua is distributed under the very liberal MIT license, stating that Lua is open source and may be used for any purpose at no cost~\cite{website:lua_license}.
 \end{itemize}
 
 While Lua is designed as an extension scripting language mainly for C applications, it is still possible to execute standalone Lua programs through the Lua interpreter~\cite[ch. 7]{manual:lua_reference_manual}.
 
-In addition to games, Lua is also used in various other types of applications and contexts. Some of these are database management, \glspl{ide}, image processing, web and browsers, multimedia, text editors and even operating systems~\cite{website:where_lua_is_used}.
+In addition to games, Lua is also used in various other types of applications and contexts. Some of these are database management, \glspl{ide}, image processing, web and browsers, multimedia, text editors and even operating systems~\cite{website:where_lua_is_used}. Among some of the more famous non-game applications we find Adobe Photoshop Lightroom, GIMP and Wireshark.
 
-Some work has also been done towards using Lua in embedded environments. This is discussed further in Sect~\ref{sec:lua_in_embedded}.
+Some work has also been done towards using Lua in embedded environments. This is discussed further in Sect.~\ref{sec:lua_in_embedded}. Additionally, Sect.~\ref{sec:lua_and_state_machines} discusses some of Lua's characteristics when considered in a state machine systems context.
 
 \section{State Machine -based Systems}
 \label{sec:state_machine_system}

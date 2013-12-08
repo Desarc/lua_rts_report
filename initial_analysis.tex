@@ -34,11 +34,21 @@ Overall, Ruby seems like a lesser alternative for use in embedded systems, at le
 
 \subsection{Java}
 \label{sec:lua_vs_java}
-TODO
+While the previous programming languages discussed have notable similarities to Lua, Java and Lua are likely more different than alike. The following list attempts to cover the most significant differences in the context of this project.
+
+\begin{itemize}
+	\item Lua and Java use quite different syntax and coding styles. However, they are both high-level languages, and it is difficult to decide which would be easier to learn and use for less experienced programmers. This likely also depends on what the programmer is trying to accomplish. It should be noted that Java has a much larger community, so it is likely easier to find help and documentation when working with Java.
+	\item With the large Java community comes a lot of libraries and modules. While Lua offers quite a few third-party libraries for common functionality, the amount of existing Java libraries is vast. This means that in many cases, the application developer will be able to find tested and well-documented third-party libraries doing at least part of the job, greatly simplifying the development process.
+	\item Lua and Java are both very portable, and given a working interpreter/\gls{vm}, programs should run on any platform. However, while the Lua interpreter is open source and relatively simple to port~\cite{chapter:porting_lua_microcontroller}, the Java \gls{vm} is proprietary, closed source, and owned by the Oracle Corporation, meaning you're generally stuck with the platforms they want to support.
+	\item Where Lua is considered to be lightweight, Java is not. As briefly discussed in Sect.~\ref{sec:reactive_blocks}, even a specialized Java \gls{vm} will only run on systems with a lot of memory available, several times the amount required for the Lua interpreter.
+	\item Java programs are generally faster than Lua programs~\cite{website:computer_language_benchmarks_game}. This is likely because of several reasons, but the fact that Java is always compiled to bytecode is likely significant. However, considering how much faster the LuaJIT-interpreter is than the standard interpreter~\cite{website:luajit_performance}, it is likely that for a lot of programs, Lua can match the performance of Java.
+\end{itemize}
+
+Given these properties, the conclusion for the comparison between Java and Lua is similar to that of the Lua-Python comparison. If we have an abundance of memory at our disposal, and the interpreter is ported to our platform, the better choice is likely Java. However, in embedded environments, these requirements are not likely to be fulfilled.
 
 \subsection{C and C++}
 \label{sec:lua_vs_c}
-When working with embedded systems on smaller devices, this is a very natural question to ask. C is by far the most commonly used programming language for embedded systems, because of the control it gives over lower level entities like I/O devices and memory combined with good performance and (if the program is well-designed) low memory use. This makes the effort required to port a program to a new architecture relatively low, because you don't have to rewrite a whole \gls{vm}. However, coding in C is significantly more tedious, as we have to handle things memory allocation. We would like to provide application development at a ``higher level'', where these things are handled automatically, making the development process a lot quicker and easier (especially for less experienced programmers).
+When working with embedded systems on smaller devices, it is very natural to consider using C. C is by far the most commonly used programming language for embedded systems, because of the control it gives over lower level entities like I/O devices and memory, combined with good performance and (if the program is well-designed) low memory use. This makes the effort required to port a program to a new architecture relatively low, because you don't have to rewrite a whole \gls{vm}. However, coding in C is significantly more tedious, as we have to handle things memory allocation. We would like to provide application development at a ``higher level'', where these things are handled automatically, making the development process a lot quicker and easier (especially for less experienced programmers).
 
 Since Lua is written in C, a Lua state machine application will obviously be largely C-based anyway, but this will (hopefully) be hidden by the Lua implementation. The performance loss is obviously a good argument in favor of C, but with the available (and simple) C \gls{api} in Lua, some of the worse cases could potentially be written as libraries in C code, diminishing this loss.
 
@@ -88,7 +98,3 @@ A first glance at the Lua reference manual indicates that standard Lua offers ve
 
 \paragraph{Software libraries}
 One of the goals of Lua is to provide a core that is as small as possible, and thus stripped of most non-essential parts. This means that standard Lua only offers basic Lua functionality~\cite[ch. 6]{manual:lua_reference_manual}, and anything else must be added through extra libraries. While there are many different extra libraries available for Lua, these tend to have less portability than the core itself, limiting our options if we want to run Lua on anything but the most common platforms. Additionally, Lua libraries are far less in number and diversity than those of its competitors, like for example Python.
-
-\section{Lua in Embedded Systems}
-\label{ch:lua_in_embedded}
-TODO
