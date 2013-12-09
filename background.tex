@@ -26,9 +26,26 @@ In addition to games, Lua is also used in various other types of applications an
 
 Some work has also been done towards using Lua in embedded environments. This is discussed further in Sect.~\ref{sec:lua_in_embedded}. Additionally, Sect.~\ref{sec:lua_and_state_machines} discusses some of Lua's characteristics when considered in a state machine systems context.
 
-\section{State Machine -based Systems}
+\section{State Machine Systems}
 \label{sec:state_machine_system}
-TODO
+A \gls{fsm} is a concept for modeling the behavior of a real or abstract program in a clear and structured way. An \gls{fsm} has a number of possible \emph{states}, of which it is always in one, and a number of \emph{transitions} describing conditions for changing from one state to another, typically in the form of an input signal. Additionally, these transitions may describe \emph{operations} that should be performed as part of the transition. There are many different ways to model \glspl{fsm}, and two common examples are UML statechart diagrams and SDL state diagrams.
+
+Fig.~\ref{fig:fsm_example} shows an example of a simple \gls{fsm} for a code-keypad controlling a door, modeled in SDL. This simple program defines two states, \emph{idle} and \emph{waiting}, as well as some signals describing the possible transitions between them.
+
+\begin{figure}[htp]
+	\centering
+	\includegraphics[scale=0.50]{stm_example}
+	\caption[SDL finite-state machine example]{An example finite-state machine for accessing a door, modeled in SDL.}
+	\label{fig:fsm_example}
+\end{figure}
+
+\glspl{fsm} may be used for describing a vast amount of different types of systems, but used in conjunction with concepts like \glspl{msc} and collaborations, they are particularly effective for describing complex systems that display concurrent and distributed behavior. Models like these allow for \emph{conceptual abstraction} and \emph{separation of concerns}, allowing developers to reduce a complex system into simpler collaborating components~\cite{article:itut_methodologies}.
+
+When a system has been modeled through the use of these concepts, developers begin the process of translating the specifications to working code. This allows the system specification to be independent of the actual implementation, with the added bonus that the models serve as documentation (diagrams are generally easier to read and understand than numerous lines of code). Building on these concepts, it is possible to develop tools both for model verification and code generation~\cite{article:compositional_arctis}. Various tools already exist for these purposes, and some of these are discussed in Sect.~\ref{sec:existing_frameworks_state_machine}.
+
+Another way of working with \glspl{fsm} is to provide a \emph{runtime system} for an arbitrary set of different \gls{fsm} implementations. We then create a framework to handle most of the underlying implementation concerns, like message passing, timers, signal handling and the like, and provide a general interface to this framework for arbitrary \gls{fsm} implementations. Given a working, robust and efficient runtime system, it becomes simple for developers to create applications, as they only need to specify and implement the behavior of the application in terms of \glspl{fsm} and operations. Going even further, one can provide modeling tools with automatic code generation, reducing the developer's workload even more. This additionally reduces the room for errors and makes applications easier to maintain and extend.
+
+There are many more good reasons for and ways to use state machine modeling and other related semantics for designing software\footnote{\cite{article:itut_methodologies},~\cite{chapter:structural_modeling_uml},~\cite{conference:system_analysis_modeling},~\cite{phd:frank}}. This project focuses on the implementation of a runtime system with an interface for running arbitrary state machines, as discussed in the previous paragraph, in the Lua programming language.
 
 \section{Embedded Systems and M2M}
 \label{sec:embedded_m2m}
