@@ -1,8 +1,64 @@
-\chapter{Discussion and conclusion}
+\chapter{Discussion and Conclusion}
 \label{ch:discussion_conclusion}
+This chapter discusses the analysis done in Ch.~\ref{ch:initial_analysis}, and the results obtained from the experiments in Ch.~\ref{ch:experimental_work}, in the attempt to answer the question defining this project: is Lua a valid and good alternative for state machine systems, particularly in embedded systems.
 
-\section{Lua as a reasonable alternative for developing state machine -based applications on embedded devices}
-TODO
+\section{Lua and State Machine Systems}
+\label{sec:disq_lua_stm}
+The first step in this project was to determine whether Lua is an appropriate language for creating state machine systems at all. Section~\ref{sec:lua_and_state_machines} outlined both some potential advantages and challenges we might encounter when attempting to build a runtime system for state machines in Lua, as well as defining the state machine implementations. By comparing to the runtime system experimented on in Ch~\ref{ch:experimental_work} and the results obtained, some observations are made.
+
+\subsection{Multitasking}
+\label{sec:disq_multitasking}
+We see that among the potential advantages mentioned, the collaborative multitasking provided by Lua's coroutines really did offer a nice way to structure our program, without adding the complexity of preemptive multitasking. We simply create a coroutine for each state machine to be resumed for completing a transition, making it yield control back to the scheduler when the transition is finished. This however assumes that the system may follow a run-to-completion model of execution, to the extent that no other parts of the program may run at all while a transition is in progress, not even to receive data asynchronously.
+
+Not being able to receive data asynchronously is a potential problem when working with a system displaying concurrent characteristics, since asynchronous communication may be a requirement. Section~\ref{sec:complete_app} offers a possible solution to this challenge, where we assume that these concurrency challenges may be handled at ``the other end'' of the communication. This may be appropriate in a typical client-server context, where a number of devices interact with a kind of central server, as is the case in most of the test applications used in Ch~\ref{ch:experimental_work}. It is however less appropriate in a peer-to-peer context where all devices are acting both as clients and servers, possibly requiring these capabilities in every device.
+
+Another problem discussed in Sect.~\ref{sec:complete_app}, is the need for \emph{sleep} functionality when the system is idle, as opposed to busy waiting. This is not possible in standard Lua, but the Lua wiki has a page dedicated to options for achieving this.\footnote{\url{http://lua-users.org/wiki/SleepFunction}} Since this issue becomes most prevalent in embedded systems with limits on the power supply, the solution is probably to write a C extension, which should be feasible for most platforms.
+
+While the standard Lua \gls{vm} is limited with respect to the multitasking we may require in a state machine system, this does not mean that providing preemptive multitasking in Lua is impossible. One of Lua's major strengths is interacting with C code, meaning it is possible to extend the Lua \gls{vm} with libraries written in C. In the case of preemptive multitasking, this has already been done for the Linux operating system~\cite{techreport:lua_concurrent}, meaning similar approaches are likely possible also for other platforms. The main point here is that compared to programming languages like Java, who already has extensive and documented support for preemptive multitasking, this probably requires a lot more work.
+
+\subsection{Timers and Timing Accuracy}
+\label{sec:disq_timers}
+With respect to timers and timing accuracy, two potential issues were identified: the granularity of time measurement in Lua, and preempting of ongoing transitions to support stricter real-time requirements.
+
+Granularity of time measurement turned out to not be a problem at all. As mentioned in Sect.~\ref{sec:runtime_system_issues}, there are alternate options for time measurement, offering granularity down to microsecond-level.
+
+Preempting transitions to allow stricter timing requirements is a challenge related to the multitasking issues discussed in Sect~\ref{sec:disq_multitasking}, but depends on whether this is something we actually want (or need) in the system. It adds a lot of complexity to the system, and is needed only in special cases. Often, run-to-completion transition semantics are implied in the definition of state machine systems~\cite{techreport:uml_state_machines}, meaning only best-effort timing performance, depending on the frequency and execution time of other transitions, is provided. For a lot of practical applications, this is sufficient.
+
+\subsection{Software Libraries}
+\label{sec:disq_libraries}
+When comparing Lua to other relevant programming languages in Sect.~\ref{sec:lua_compared}, we noted that these generally offer more in terms of third-party software libraries. Compared to for example Java, Lua has a smaller community of developers, meaning less libraries offering additional functionality or solving common problems are created and made publicly available (however the list is still long). Having a third-party library available for needed functionality significantly reduces development effort, as one does not have to reinvent the wheel.
+
+During my experiments, I only used relatively simple examples, reducing the need for advanced functionality that might have been provided by a third-party library. Thus for my experiments, the relatively smaller community of developers did not provide significant disadvantages. In fact, I was able to find exactly the types of libraries I needed, namely LuaSocket and eLua, even if eLua lacked some additional functionality I could have used, as noted in Sect~\ref{sec:complete_app}. An advantage with the Lua community in this area is that they keep a relatively updated list of these libraries on the Lua wiki.\footnote{\url{http://lua-users.org/wiki/LuaAddons}}
+
+A major advantage Lua has when it comes to software libraries, is the embedding capabilities mentioned in Sect~\ref{sec:lua_advantages}, making Lua both an extensible and an extension language. If we encounter a problem we cannot solve with pure Lua code, we can simply attempt to solve it in another language (typically C), and bind it to Lua. Looking at the various problems encountered in Ch.~\ref{ch:experimental_work}, such as high memory use and lacking peripheral support, it is likely that many of these can be solved by writing the ``problematic'' parts in C. Worst case, we can create a pure C runtime system, and extend it with support for state machines defined in Lua (this is similar to how for example Wireshark adds packet dissectors and taps\footnote{\url{http://wiki.wireshark.org/Lua}}). This allows us to solve some of the problems associated with state machine systems in Lua, while keeping the simpler programming interface that Lua offers.
+
+\subsection{Complexity}
+\label{sec:disq_complexity}
+One of the primary motivations for using Lua was to allow application development on a high level, even in resource-constrained contexts. From my own experience of using Lua, the programming language was quite easy to learn and get started with, allowing me to create a prototype for the runtime system pretty quickly. The simple syntax, automatic memory handling and the choice of coroutines as the multitasking paradigm in Lua is part of what made it easy. However, as I progressed through the experiments, I learned that there was a significant difference between learning to write Lua and learning to write \emph{good} and \emph{efficient} Lua. I had to dig into additional documentation and learn some of the more subtle properties of Lua in order to make the program good enough, which increased the ``entrance cost'' of the language. It should be noted that this was in many ways a result of working in a resource-constrained environment, something that may prove challenging in any language, and is not necessarily a weakness for Lua.
+
+When considering the overall complexity of the runtime system, we should also note that the prototype implemented as a part of this project is very simple, and offers only basic functionality. There are several factors that are likely to significantly increase the complexity of the system as it is made more complete, such as allowing preemptive multitasking, or writing extension libraries in C. Additionally, there could be significant effort associated with porting the system to the relevant platform, if this is not already done. In short, it is unlikely that we escape most of the complexities and challenges associated with concurrency and other lower-level functionality, even if we choose to use Lua.
+
+If we shift the focus a little, and view the problem from an application developer's perspective, we get a slightly different impression. If we assume a tested and working runtime system providing an abstraction from the lower-level considerations, developing state machine applications can be quite simple. Looking at the example applications in Sect.~\ref{sec:impl_state_machines}, we see that in terms of Lua code, state machines can be defined in a clear and structured way. In this case though, we obviously benefit not only from using a high-level language like Lua, but also from the abstractions that the runtime system provides, which would likely be significant independent of the programming language used.
+
+\section{Lua State Machine Systems in an Embedded Context}
+\label{sec:disq_lua_embedded}
+Running a state machine system on an embedded device adds some additional challenges into the mix, independent of the programming language used to implement it. However, depending on their properties, different languages may increase or decrease the extent of these challenges. During the course of the experimental work done in Ch.~\ref{ch:experimental_work}, I encountered some significant challenges and issues related to the use of Lua in this context, particularly related to memory use.
+
+\subsection{Memory Use}
+\label{sec:disq_memory_use}
+
+
+\subsection{Robustness}
+\label{sec:disq_robust}
+
+\subsection{Portability}
+\label{sec:disq_portability}
+
+\section{Potential for Automatic Code Generation}
+\label{sec:disq_automatic_code}
+
+\section{Conclusion}
+\label{sec:conclusion}
 
 \section{Further work}
-TODO
+\label{sec:further_work}
