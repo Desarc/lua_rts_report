@@ -4,11 +4,11 @@ This chapter outlines work done by other people related to my problem descriptio
 
 \section{Existing Frameworks for State Machine Applications}
 \label{sec:existing_frameworks_state_machine}
-State machine -based systems is a well-established concept in the world of software, and several frameworks already exist for developing applications based on this concept. These frameworks vary in implementation language, design method and portability, and some of their main properties will be outlined in this section. These frameworks will be used for comparison when evaluating Lua/eLua for state machine -based systems.
+State machine systems is a well-established concept in the world of software, and several frameworks already exist for developing applications based on this concept. These frameworks vary in implementation language, design method and portability, and some of their main properties will be outlined in this section. These frameworks will be used for comparison when evaluating Lua as an alternative for state machine systems.
 
 \subsection{Reactive Blocks}
 \label{sec:reactive_blocks}
-Reactive Blocks\footnote{\url{http://www.bitreactive.com}} is a Java-based framework for developing state machine applications. It offers integration with the Eclipse \gls{ide}, and is essentially a code/application generator with a graphical interface, tailored for event-driven and concurrent systems. Application design is done by creating, connecting and combining various \emph{building blocks}. These building blocks consist of three parts:
+Reactive Blocks\footnote{\url{http://www.bitreactive.com}} is a Java-based framework for developing state machine applications, based on \gls{uml} activities. It offers integration with the Eclipse \gls{ide}, and is essentially a code/application generator with a graphical interface, tailored for event-driven and concurrent systems. Application design is done by creating, connecting and combining various \emph{building blocks}. These building blocks consist of three parts:
 \begin{itemize}
 	\item Activity diagram: describes the internal behavior and logic of the block.
 	\item External state machine: serves as an interface towards other blocks and the enclosing application. Defines which input signals are allowed in a given state, transitions associated with an input signal and a state, and any output signals resulting from the transition.
@@ -36,7 +36,7 @@ However, one fundamental disadvantage is that any applications created with Reac
 
 \subsection{RKH}
 \label{sec:rkh_state_machine}
-RKH\footnote{\url{http://rkh-reactivesys.sourceforge.net}} is a C-based development tool for implementing state machine -based systems. It is specifically designed to work on embedded systems, and consists of various platform-independent modules. The software provides a cooperative scheduler, timer and event managers, as well as a graphical interface to help designing state machines based on UML state tables. Like Reactive Blocks, RKH generates and compiles code that can be run directly. An example of a transition table statement in RKH is displayed in Fig.~\ref{figure:rkh_transition}.
+RKH\footnote{\url{http://rkh-reactivesys.sourceforge.net}} is a C-based development tool for implementing state machine systems. It is specifically designed to work on embedded systems, and consists of various platform-independent modules. The software provides a cooperative scheduler, timer and event managers, as well as a graphical interface to help designing state machines based on UML state tables. Like Reactive Blocks, RKH generates and compiles code that can be run directly. An example of a transition table statement in RKH is displayed in Fig.~\ref{figure:rkh_transition}.
 
 \begin{figure}[htp]
 	\centering
@@ -45,7 +45,7 @@ RKH\footnote{\url{http://rkh-reactivesys.sourceforge.net}} is a C-based developm
 	\label{figure:rkh_transition}
 \end{figure}
 
-RKH has some particularly strong advantages when developing state machine -based applications on embedded systems:
+RKH has some particularly strong advantages when developing state machine applications on embedded systems:
 \begin{itemize}
 \item RKH is fairly platform-independent, and already built to support many platforms and processors (linux, \gls{rtos}, mbed etc…). Additionally, the modules are customizable and the project is open source, meaning it can be adapted also to custom platforms.
 \item The system has a very small memory footprint, making it usable also for minimal embedded systems.
@@ -79,7 +79,7 @@ Some of the advantages with \gls{qp}/\gls{qm} are:
 	\caption[An UML statechart in QM]{A \gls{qp} active object modeled as a hierarchical UML statechart in \gls{qm}. Each statechart lists possible input signals and the following output signals or actions. Image source: \url{http://www.state-machine.com/qm/index.php} \label{figure:qm_statechart} }
 \end{figure}
 
-The major disadvantage with \gls{qp}/\gls{qm} is that it is implemented in C/C++, which means implementation of application-specific transaction operations require knowledge of C/C++ programming. However, while these are considered to be more “advanced” languages than for example Python, the level of knowledge required in this context may not be all that high (these operations can be quite simple).
+The major disadvantage with \gls{qp}/\gls{qm} is that it is implemented in C/C++, which means implementation of application-specific transaction operations require knowledge of C/C++ programming. However, while these are considered to be more low-level languages than for example Python, the level of knowledge required in this context may not be all that high (these operations can be quite simple).
 
 \section{Lua in Embedded Systems}
 \label{sec:lua_in_embedded}
@@ -101,4 +101,4 @@ Mihini\footnote{\url{http://www.eclipse.org/mihini}} is an open-source embedded 
 \label{sec:elua}
 eLua\footnote{\url{http://www.eluaproject.net}} (or Embedded Lua) is an open-source, full implementation of the Lua virtual machine for some selected processors and embedded platforms. It does not require an operating system to run, and is portable to other platforms in addition to the ones supported. Like standard Lua, eLua is made to be minimalistic, and thus only offers some specific libraries for the embedded platform in addition to the standard Lua implementation. The modules are generalized and designed to run on various platform, making the Lua applications built on top of the framework almost completely platform-independent. eLua provides modules for most of the common peripherals, like LEDs, buttons, Ethernet and USB, as well as facilities like system timers and PIO. The full binary image of eLua requires ~256KB of \gls{rom}, but by removing some of the additional modules (if they are not required by the application), it can also fit on a system with only 128KB. eLua provides its own minimal file system, allowing Lua source code to be loaded onto and run directly on the microcontroller.
 
-Because it is fairly quick and easy to get started with eLua on one of the supported platforms, I chose to use eLua with the LM3S9D92 microcontroller for my experimental work in Chapt.~\ref{ch:experimental_work}. The software provides a solid base for testing the feasibility of Lua applications, including those based on state machines, on minimalistic platforms. Some additional characteristics of eLua that are relevant in this context are described in Sect.~\ref{sec:running_on_micro}.
+Because it is fairly quick and easy to get started with eLua on one of the supported platforms, I chose to use eLua with the LM3S9D92 microcontroller for my experimental work in Ch.~\ref{ch:experimental_work}. The software provides a solid base for testing the feasibility of Lua applications, including those based on state machines, on minimalistic platforms. Some additional characteristics of eLua that are relevant in this context are described in Sect.~\ref{sec:running_on_micro}.
