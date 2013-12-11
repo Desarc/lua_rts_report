@@ -10,34 +10,43 @@ The first step in this project was to determine whether Lua is an appropriate la
 \label{sec:disq_multitasking}
 We see that among the potential advantages mentioned, the collaborative multitasking provided by Lua's coroutines really did offer a nice way to structure our program, without adding the complexity of preemptive multitasking. We simply create a coroutine for each state machine to be resumed for completing a transition, making it yield control back to the scheduler when the transition is finished. This however assumes that the system may follow a run-to-completion model of execution, to the extent that no other parts of the program may run at all while a transition is in progress, not even to receive data asynchronously.
 
+\noindent
 Not being able to receive data asynchronously is a potential problem when working with a system displaying concurrent characteristics, since asynchronous communication may be a requirement. Section~\ref{sec:complete_app} offers a possible solution to this challenge, where we assume that these concurrency challenges may be handled at ``the other end'' of the communication. This may be appropriate in a typical client-server context, where a number of devices interact with a kind of central server, as is the case in most of the test applications used in Ch~\ref{ch:experimental_work}. It is however less appropriate in a peer-to-peer context where all devices are acting both as clients and servers, possibly requiring these capabilities in every device.
 
+\noindent
 Another problem discussed in Sect.~\ref{sec:complete_app}, is the need for \emph{sleep} functionality when the system is idle, as opposed to busy waiting. This is not possible in standard Lua, but the Lua wiki has a page dedicated to options for achieving this.\footnote{\url{http://lua-users.org/wiki/SleepFunction}} Since this issue becomes most prevalent in embedded systems with limits on the power supply, the solution is probably to write a C extension, which should be feasible for most platforms.
 
+\noindent
 While the standard Lua \gls{vm} is limited with respect to the multitasking we may require in a state machine system, this does not mean that providing preemptive multitasking in Lua is impossible. One of Lua's major strengths is interacting with C code, meaning it is possible to extend the Lua \gls{vm} with libraries written in C. In the case of preemptive multitasking, this has already been done for the Linux operating system~\cite{techreport:lua_concurrent}, meaning similar approaches are likely possible also for other platforms. The main point here is that compared to programming languages like Java, who already has extensive and documented support for preemptive multitasking, this probably requires a lot more work.
 
 \subsection{Timers and Timing Accuracy}
 \label{sec:disq_timers}
 With respect to timers and timing accuracy, two potential issues were identified: the granularity of time measurement in Lua, and preempting of ongoing transitions to support stricter real-time requirements.
 
+\noindent
 Granularity of time measurement turned out to not be a problem at all. As mentioned in Sect.~\ref{sec:runtime_system_issues}, there are alternate options for time measurement, offering granularity down to microsecond-level.
 
+\noindent
 Preempting transitions to allow stricter timing requirements is a challenge related to the multitasking issues discussed in Sect~\ref{sec:disq_multitasking}, but depends on whether this is something we actually want (or need) in the system. It adds a lot of complexity to the system, and is needed only in special cases. Often, run-to-completion transition semantics are implied in the definition of state machine systems~\cite{techreport:uml_state_machines}, meaning only best-effort timing performance, depending on the frequency and execution time of other transitions, is provided. For a lot of practical applications, this is sufficient.
 
 \subsection{Software Libraries}
 \label{sec:disq_libraries}
 When comparing Lua to other relevant programming languages in Sect.~\ref{sec:lua_compared}, we noted that these generally offer more in terms of third-party software libraries. Compared to for example Java, Lua has a smaller community of developers, meaning less libraries offering additional functionality or solving common problems are created and made publicly available (however the list is still long). Having a third-party library available for needed functionality significantly reduces development effort, as one does not have to reinvent the wheel.
 
+\noindent
 During my experiments, I only used relatively simple examples, reducing the need for advanced functionality that might have been provided by a third-party library. Thus for my experiments, the relatively smaller community of developers did not provide significant disadvantages. In fact, I was able to find exactly the types of libraries I needed, namely LuaSocket and eLua, even if eLua lacked some additional functionality I could have used, as noted in Sect~\ref{sec:complete_app}. An advantage with the Lua community in this area is that they keep a relatively updated list of these libraries on the Lua wiki.\footnote{\url{http://lua-users.org/wiki/LuaAddons}}
 
+\noindent
 A major advantage Lua has when it comes to software libraries, is the embedding capabilities mentioned in Sect~\ref{sec:lua_advantages}, making Lua both an extensible and an extension language. If we encounter a problem we cannot solve with pure Lua code, we can simply attempt to solve it in another language (typically C), and bind it to Lua. Looking at the various problems encountered in Ch.~\ref{ch:experimental_work}, such as high memory use and lacking peripheral support, it is likely that many of these can be solved by writing the ``problematic'' parts in C. Worst case, we can create a pure C runtime system, and extend it with support for state machines defined in Lua (this is similar to how for example Wireshark adds packet dissectors and taps\footnote{\url{http://wiki.wireshark.org/Lua}}). This allows us to solve some of the problems associated with state machine systems in Lua, while keeping the simpler programming interface that Lua offers.
 
 \subsection{Complexity}
 \label{sec:disq_complexity}
 One of the primary motivations for using Lua was to allow application development on a high level, even in resource-constrained contexts. From my own experience of using Lua, the programming language was quite easy to learn and get started with, allowing me to create a prototype for the runtime system pretty quickly. The simple syntax, automatic memory handling and the choice of coroutines as the multitasking paradigm in Lua is part of what made it easy. However, as I progressed through the experiments, I found there was a significant difference between learning to write Lua and learning to write \emph{good} and \emph{efficient} Lua. I had to dig into additional documentation and learn some of the more subtle properties of Lua in order to make the program good enough, which increased the ``entrance cost'' of the language. It should be noted that this was in many ways a result of working in a resource-constrained environment, something that may prove challenging in any language, and is not necessarily a weakness for Lua.
 
+\noindent
 When considering the overall complexity of the runtime system, we should also note that the prototype implemented as a part of this project is very simple, and offers only basic functionality. There are several factors that are likely to significantly increase the complexity of the system as it is made more complete, such as allowing preemptive multitasking, or writing extension libraries in C. Additionally, there could be significant effort associated with porting the system to the relevant platform, if this is not already done. In short, it is unlikely that we escape most of the complexities and challenges associated with concurrency and other lower-level functionality, even if we choose to use Lua.
 
+\noindent
 If we shift the focus a little, and view the problem from an application developer's perspective, we get a slightly different impression. If we assume a tested and working runtime system providing an abstraction from the lower-level considerations, developing state machine applications can be quite simple. Looking at the example applications in Sect.~\ref{sec:impl_state_machines}, we see that in terms of Lua code, state machines can be defined in a clear and structured way. In this case though, we obviously benefit not only from using a high-level language like Lua, but also from the abstractions that the runtime system provides, which would likely be significant independent of the programming language used.
 
 \section{Lua State Machine Systems in an Embedded Context}
@@ -48,39 +57,51 @@ Running a state machine system on an embedded device adds some additional challe
 \label{sec:disq_memory_use}
 The major challenge encountered when moving the state machine system from desktop computers to embedded devices, was memory use. Section~\ref{sec:memory_use} describes the various changes I had to make to the system in order to reduce dynamic memory use to more acceptable levels, but at the current version, the memory overhead is still high.
 
+\noindent
 As noted in Sect.~\ref{sec:lua_and_embedded}, Lua is considered to be sparse where memory is concerned, at least with respect to \gls{rom}. However, as Lua is an interpreted language rather than compiled, the interpreter/\gls{vm} must be kept in memory in addition to the program. In our case, we even add some additional overhead with the eLua modules and the runtime system. From the results in Sect.~\ref{sec:memory_use}, we see that the runtime system accounts for the majority of the memory overhead, which means that the disadvantages of using an interpreted language are less important here. This is also largely because of the \gls{ltr} patch for eLua mentioned in Sect.~\ref{sec:more_optimization}, which significantly reduces the dynamic memory used by eLua.
 
+\noindent
 While I was able to reduce the dynamic memory use of the runtime system to relatively stable and more acceptable levels, it is still likely to be too high for certain applications, and especially if we move to platforms with even less resources. Additionally, adding features to the runtime system is likely to increase memory use for even higher overhead. More experienced Lua programmers may be able to find more room for memory optimization in the runtime system, but it is possible that we have to move significant parts to C code in order to decrease the memory overhead sufficiently.
 
+\noindent
 Even if memory use proved to be almost too high when using Lua to create a state machine runtime system, this does not necessarily make Lua a ``worse'' alternative. Compared to lower level languages like C, Lua is likely a worse choice in this respect, but as noted in Sect.~\ref{sec:lua_compared}, compared to languages like Python, Perl and Java, Lua is the better choice. 
 
 \subsection{Performance}
 \label{sec:disq_performance}
 When evaluating the performance of the runtime system prototype, it is important to note that some of the results in Sect.~\ref{sec:performance_overhead} are specific to the microcontroller used for the experiments. The actual time required to perform a certain task will vary depending on the hardware the program runs on. Additionally, I have not conducted tests with other programming languages on this platform, so there is no data available for a comparison.
 
+\noindent
 However, it is interesting to see how much overhead the runtime system adds with respect to performance. The numerical values from the comparison will naturally also vary with the underlying hardware, but they still give an indication of how much relative time the application will spend on runtime system overhead. The results from Sect.~\ref{sec:performance_overhead_measure} show that for very small tasks, this overhead can take as much as 3/4 of the CPU time, which is very high. Fortunately, considering these tasks are as small as 100 microseconds, they may be less common in real applications. Additionally, for this to actually be a problem, these tasks need to be scheduled with a frequency of more than 1/2850. Looking at tasks that are perhaps more realistic (but possibly in the higher end of the completion times scale), we see that sending a message over TCP/IP takes a little less than 200 milliseconds, making the runtime system overhead completely insignificant for such tasks.
 
 \subsection{Robustness}
 \label{sec:disq_robustness}
 In the process of making software frameworks for application development, a very important aspect is that the framework should be robust. This should be considered both with respect to handling errors that might occur in the runtime system itself, as well as potential issues introduced by developers, either inadvertently or maliciously.
 
+\noindent
 A common way of handling errors is by raising exceptions, and dealing with these somewhere else in the code if appropriate. Lua offers a type of exception handling by use of a \emph{protected call}~\cite[Ch.8.4]{book:programming_in_lua_first}, and additionally a coroutine \emph{resume} call is by default a type of protected call, returning an error message if something goes wrong. Neither concepts were considered extensively in the prototype, but should be included in a more complete version. Note that this is likely provide an increase in memory use, but it would most likely not be significant.
 
+\noindent
 In order to handle issues raised by developers when developing their own applications within the frameworks, there are several approaches. A simple way is to use encapsulation, restricting access to variables and data to specific contexts. Initially, this is something I wanted to have in the runtime system, and it was part of the first version, but it increased dynamic memory by a significant amount. All traces of encapsulation-like behavior had to be removed in order to reach acceptable memory use levels, as seen in Sect.~\ref{sec:memory_use}. This implies that protecting the runtime system from tampering, inadvertent or otherwise, might be a significant challenge, possibly even infeasible. Section~\ref{sec:lua_advantages} mentions that since Lua functions are first-class values, it is possible and relatively easy to implement a form of sandboxing for protection of some core functions, but this is hard to extend to data and variable protection without having some kind of encapsulation to begin with.
 
 \subsection{Portability}
 \label{sec:disq_portability}
 Considering the portability of the runtime system, the use of Lua was a really good choice for my case. Thanks to the eLua team, I was able to get a standard Lua interpreter up and running on a microcontroller in virtually no time, with the runtime system requiring almost no modification. However, I had the luxury of being able to choose one of the microcontroller that was already supported by eLua, which not necessarily a guarantee.
 
+\noindent
 eLua is available for only a small set of microcontrollers, and development is slow (more than 2 years passed between versions 0.8 and 0.9). Considering this, relying on eLua for a commercial runtime system framework is probably not a good idea. This means that support for various platforms must be included in the framework, requiring significant additional effort. We should however note that providing a framework that runs on a large number of embedded platforms likely requires significant effort independent of the programming language used, and Lua may actually provide some advantages towards this. As mentioned in Sect.~\ref{sec:lego_mindstorms}, Lua has specifically been designed to allow the \gls{vm} to be ported to other platforms without too much change. Compared to the proprietary Java \gls{vm}, or the complex Perl core, Lua is probably the better option for this purpose.
 
 \section{Potential for Automatic Code Generation}
 \label{sec:disq_automatic_code}
 Providing a runtime system framework to support state machine definitions goes a long way in improving the efficiency and reducing the difficulty of developing state machine applications. However, with these things already in place, we can take this a step further, and create modeling tools that generate the code for the state machine definitions based on graphical models. With graphical models as the basis for development, it becomes a relative triviality to do things like error checking, consistency checking, extension and addition of modules.
 
+\noindent
 Given the simple and consistent structure of the Lua code for the sample state machine applications in Sect.~\ref{sec:impl_state_machines}, it seems feasible to create an automatic code generator based on graphical models for this runtime system. Operations will probably still have to be defined by Lua code, but the state and event structure should be rather easily translatable. Note that as the operations become more complex (for example using several different external libraries), the advantage of this type of code generation diminishes some, since we end up writing a lot of code anyway, but it is still useful.
 
+\noindent
 In addition to making the application development process smoother, automatic code generation is likely to solve some of the robustness issues described in Sect~\ref{sec:disq_robustness}, particularly those related to developer errors. With this approach, the developer may never have to write Lua code that directly interfaces with the runtime system, meaning we can focus our efforts on more general error handling.
+
+\noindent
+Optionally, instead of writing a code generator from scratch, it could be a good idea to take a closer look at the State Machine Compiler described in Sect.~\ref{sec:state_machine_compiler}. This program already generates Lua code for state machines, so it could be possible to adapt the runtime system interface to these state machine implementations. It should however be noted that the State Machine Compiler uses slightly different semantics when invoking transitions, and is meant to be embedded in other applications, meaning the code generated may not be suitable for pure state machine systems.
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -89,4 +110,15 @@ In addition to making the application development process smoother, automatic co
 \label{sec:further_work}
 While this project has explored some of the issues associated with runtime systems for state machines in Lua, it serves only as a starting point, and there are many possible directions for continuing this work.
 
-\paragraph{Automatic Code Generation} As discussed in Sect.~\ref{sec:disq_automatic_code}, 
+\paragraph{Extending the Runtime System} While the prototype created for this project serves as a basis, some features are missing that should be present in a more complete version. Sections~\ref{sec:runtime_system_issues} and~\ref{sec:complete_app} mention some of these issues, and they should be addressed in order to determine whether Lua really is a good alternative for state machine systems. This includes adding missing features, like saving events and listening for external signals, as well as optimizing the system in order to decrease the large memory overhead.
+
+\paragraph{Writing a Runtime System in C} Section~\ref{sec:disq_libraries} outlines the possibility for creating a runtime system purely in C, with an interface for state machine definitions in Lua code. Given the low memory available in embedded devices, and the test results from Sect.~\ref{sec:memory_use} showing the memory overhead of the current system, this is possibly a better option than using a Lua runtime system.
+
+\paragraph{Automatic Code Generation} As discussed in Sect.~\ref{sec:disq_automatic_code}, we could increase development efficiency even further by automatically generating the code for state machines based on graphical models. This however requires that we have a more complete and working runtime system, and is therefore not the first issue that should be addressed.
+
+\paragraph{Testing on Other Platforms} In this project, the runtime system was only tested in Linux and Windows desktop environments, and on a single microcontroller with eLua. Additionally, the microcontroller hardware was in the higher end of the scale, having a lot of memory and processing capabilities compared to those further down. Other platforms, possibly with even less available resources, should also be tested for feasibility.
+
+\noindent
+Additionally, since eLua only supports a select set of microcontrollers, the effort required to port a potential state machine framework to other platforms should be looked into.
+
+\paragraph{Real Applications} 

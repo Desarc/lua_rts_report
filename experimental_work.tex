@@ -13,6 +13,7 @@ The first step towards working with state machine -based applications, is buildi
 	\item A \emph{scheduler} to keep track of active state machines, events and timers, and assigning events and timers to their respective state machines at the appropriate time.
 \end{itemize}
 
+\noindent
 It turns out to be quite simple to implement this system in Lua. The source code is included in Appx.~\ref{code:rts}, and each component is explained in the sections below.
 
 \subsection{Event Data Structure}
@@ -23,12 +24,14 @@ Even though Lua is not natively object-oriented, an event object is still easily
 \label{sec:impl_timer}
 The timer object (Code snip.~\ref{code:timer}) is created similarly to the event object described in Sect.~\ref{sec:impl_event} with respect to inheritance and encapsulation. Additionally, we need some way to keep track of time. As discussed in Sect.~\ref{sec:lua_and_state_machines}, Lua does not natively offer preemptive multitasking~\cite[ch. 2.6]{manual:lua_reference_manual}, so running an active timer on a separate thread is pretty much out of the question. However, for a simple runtime system, we may delegate the responsibility of measuring time to the scheduler component, and simply create a \emph{timestamp} for the desired activation time. This may decrease the timing accuracy of activation, but on the other hand also decreases overhead and complexity of the runtime system. In many cases it is not necessary or even desirable to preempt a running transition, but sufficient to wait until the transition has finished before scheduling the event following the timeout. This is however something that should be addressed when designing a more complete runtime system, and something that may prove challenging, as discussed in Sect.~\ref{sec:lua_and_state_machines}.
 
+\noindent
 The granularity of the timestamp is another issue that must be addressed, and is also discussed in Sect.~\ref{sec:lua_and_state_machines}. As a starting point, I chose to use \emph{os.time()}, even though it only offers \emph{second}-granularity. This is fortunately OK for the preliminary examples, and will be further addressed in Sect.~\ref{sec:running_on_micro}.
 
 \subsection{State Machine Prototype/API}
 \label{sec:impl_stm}
 The third component we need is a prototype for implementation of a given state machine. This prototype serves as a kind of API, defining some common values and methods for all state machines. The state machine prototype (Code snip.~\ref{code:stm}), inspired by an exercise given in the course TTM4160 at NTNU, contains some predefined values to be returned to the scheduler after a transition, encapsulated data fields for state and ID, as well as a \emph{fire} function meant to be overridden in an implementation. When overridden, this function should implement all possible transitions for the state machine inside an eternal \emph{while}-loop such that only one transition is executed each pass.
 
+\noindent
 Additionally, the required presence of a \emph{run} field holding a coroutine is indicated. The coroutine scheme is probably what makes the Lua implementation most unique. The coroutine references the \emph{fire} function, causing this function to be \emph{resumed} when the coroutine is resumed. This coroutine scheme fits perfectly into our runtime system as a way of structuring the program. Each state machine has its own coroutine with a separate thread, maintaining its state as well as other data, while the scheduler (see Sect. \ref{sec:impl_sched}) runs the main thread, handing execution control over to state machines according to events and timeouts. As a result of this, a state machine transition is never interrupted by a scheduler, meaning we have to trust all state machines to eventually hand execution control back to the scheduler. On the other hand, we don't have to worry about making state machines or transitions ``thread safe''.
 
 \subsection{Scheduler}
@@ -42,8 +45,10 @@ The scheduler (Code snip.~\ref{code:scheduler}) is the last component we need fo
 	\item Scheduling of events and timers (timeouts) to their respective state machines in an appropriate order
 \end{itemize}
 
+\noindent
 Adding and removing state machines is enabled by keeping a table with references to active state machine objects, indexed by their ID. Similar schemes are implemented for events and timers. Lua tables natively allow indexing by arbitrary values, as well as inserting at the end or removing from the front, effectively emulating the semantics of a hashmap or a queue without the need for any extra tweaking or import of libraries. The list of timers is kept sorted to make checking for timeouts quicker, but at the cost of extra work on insertion (with busy waiting, checking timers is generally done a lot more often than adding new timers).
 
+\noindent
 Finally, we have a continuously running \emph{run} function that handles the actual scheduling. The scheduling scheme is kept simple: timeouts have priority over events. For each pass, the function first checks if any timers have expired, and if not, moves on to check if there are any events waiting. If a timeout or event is found, execution control is handed to the state machine it belongs to with a \emph{coroutine.resume} call. The scheduler thread then waits until the following transition is completed, and execution control is returned from the state machine through the \emph{coroutine.yield} call, before doing another pass.
 
 \subsection{Missing Features and Possible Issues}
@@ -52,10 +57,12 @@ While the most basic functionality is easy to implement, the runtime system outl
 
 \paragraph{Multitasking} The main issue to consider here is probably multitasking. For a simple scheme where only the internal state machines are generating events, the current non-preemptive multitasking is a great solution. However, in many cases sources of events will be external to the system like in the case of an Ethernet socket. With only one thread executing at a time, receiving external events asynchronously is difficult. Fortunately, if we assume that input does not have to be received in the system at exactly the time it is sent (input is buffered), and every state machine should be able to run its transitions to completion, this is possible with Lua's non-preemptive coroutines. We may simply resume a coroutine that checks for external input, for example from a network socket, every time a transition is completed (or periodically if the system is idle).
 
+\noindent
 However, a potential problem is that an ill-defined state machine may get stuck in a transition, never returning control to the scheduler. In this case, it may wise to have a \emph{watchdog timer} running in parallel, ready to hand control back to the scheduler if the transition takes too long. Standard Lua does not offer any way of doing this though, so our options are to use external libraries or write our own multitasking module. Extending Lua to include preemptive multitasking is certainly possible~\cite{techreport:lua_concurrent}, but becomes increasingly difficult when we don't have access to \gls{os} threads. Since these are not available on the microcontroller used in Sect.~\ref{sec:running_on_micro}, exploring the possibilities of using preemptive multitasking in the runtime system will not be considered in this project.
 
 \paragraph{Timing Accuracy} Another point we need to consider, is timeout accuracy. Since timers are not allowed to preempt, execution may be delayed for an unknown amount of time. Again, this is probably ok if you don't require very strict timing accuracy, but this may not always be the case. Unfortunately, better guarantees for timing accuracy is hard to achieve without preemptive multitasking.
 
+\noindent
 Also, as noted in Sect.~\ref{sec:impl_timer}, the current timers only support \emph{second}-granularity. An option to achieve better granularity could be to use the function \emph{os.clock}, which measures time in milliseconds. However, this function attempts to measure CPU time, and may be inaccurate with respect to real time if other processes are running at the same time. The better solution is likely to use third-party libraries for this: for desktop applications we can use \emph{luasocket}, and eLua actually has its own timestamp implementation. Both solutions offer microsecond granularity.
 
 \paragraph{Busy Waiting} In its current state, the runtime system does busy waiting when there is nothing else to do. This is obviously a simpler and ``safer'' solution than making the system sleep while waiting, but in some cases it may not be good enough. When working with embedded systems, we often want to avoid having to do maintenance on the devices after they have been activated, because its often very inconvenient and possibly expensive. In these cases, battery lifetime must be considered, and a system that does active waiting is likely to consume too much power. Sleeping between transitions may then become a requirement, meaning we have to account for this in the runtime system. Implementing this is however likely to raise the same problems as with preemptive multitasking, and is therefore not considered in this project.
@@ -70,10 +77,13 @@ When we have a working runtime system, the next step is to create state machines
 \label{sec:impl_traffic_light}
 Like the state machine prototype, the Traffic Light Controller is inspired by an exercise given in the TTM4160 course. In this application, we simulate a controller for a pedestrian traffic light. When a pedestrian pushes the button, the light for cars is set to yellow, and a timer is started. Following the resulting timeout, lights are set to new colors and new timers are started accordingly, until the whole sequence is complete, and the controller waits for a new button press. Its \gls{uml} specification is shown in Fig.~\ref{fig:traffic_light_uml}, and the resulting Lua code in Code snip.~\ref{code:traffic_light}.\footnote{Also available on GitHub: \url{https://github.com/Desarc/state_machine_rts/tree/master/trafficlight}}
 
+\noindent
 The Lua code is fairly straightforward: we load required modules and define some constants specific to this state machine, like states, timer delays, and event types. The next step is to create a simple constructor, assigning a given ID to the new Traffic Light Controller instance, setting the initial state, and keeping a reference to the scheduler. The final part is the \emph{fire} function looping over all the possible transitions. This is implemented in an action-oriented way, making the code clearly structured and very readable. Every transition fork ends with a call to \emph{coroutine.yield}, handling execution control back to the scheduler. It is really important to end every possible fork with a yield as done with the numerous \emph{else} statements, or we risk the state machine getting stuck in the loop in case of an unexpected event.
 
+\noindent
 Testing the application is equally straightforward: we create a \emph{main} program (Code snip.~\ref{code:main}) with an instance of the scheduler and the Traffic Light controller, and register the state machine with the scheduler. We also create a ``fake'' button press event, and add it to the scheduler's event queue. Finally, we start the runtime system by calling the scheduler's \emph{run} function, and observe the following behavior.
 
+\noindent
 A test run of this application provided the output displayed in Fig.~\ref{fig:traffic_light_output}, with the appropriate timer delays between each line. This is in line with what we would expect from the \gls{uml} specification in Fig.~\ref{fig:traffic_light_uml}.
 
 \begin{figure}[htp]
@@ -88,10 +98,13 @@ A test run of this application provided the output displayed in Fig.~\ref{fig:tr
 Our next step is to test the runtime system with more than a single state machine, so the scheduler has to do some actual scheduling. To achieve this, I designed some simple state machines working together to form a client and a server. To communicate between the client and the server, I designed state machines using \gls{tcp} sockets from the LuaSocket library.\footnote{\url{http://w3.impa.br/~diego/software/luasocket/}} The client application consists of one state machine for periodically generating requests (Fig.~\ref{fig:stm_event_gen}), one for displaying replies from the server (Fig.~\ref{fig:stm_print_message}) and one for sending and receiving messages over \gls{tcp} (Fig.~\ref{fig:stm_client_conn}). The server application consists of one state machine for handling requests (Fig.~\ref{fig:stm_request_handler}) and one for sending and receiving messages over \gls{tcp} (Fig.~\ref{fig:stm_server_conn}). The two TCP state machines are almost identical, with the exception that the server side is by default in receive mode, while the client side is in send mode.
 The Lua implementation for the request generating state machine is displayed in Code snip.~\ref{code:event_gen}, and the remaining implementations are publicly available on GitHub.\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/client-server}}
 
+\noindent
 In addition to implementing the new state machines, I had to extend the runtime system with a simple \emph{message} format, enabling easy serialization and deserialization of object data to be sent over the network.
 
+\noindent
 Comparing the implementation of the request generator to the implementation of the Traffic Light Controller in Sect.~\ref{sec:impl_traffic_light}, we see that a lot of the code may be reused. We basically only need to change state and event definitions, implement any operations performed in transitions, and finally change the action-oriented list of transitions to reflect those of the current state machine. It requires only minimal work, and is not particularly error-prone because the code is simple and readable. This also applies to the other state machines implemented for this application, and implies that creating more complex applications, given the state machine template and a working runtime system, should be rather trivial.
 
+\noindent
 Running the two applications also produced the expected results: the client application periodically sends requests, these are handled by the server application, and the client application finally receives a response. The output produced is displayed in Fig.~\ref{fig:client_output} and~\ref{fig:server_output}.
 
 \begin{figure}[htp]
@@ -124,6 +137,7 @@ The Stellaris LM3S9D92 is a microcontroller produced by Texas Instruments.\footn
 	\item 512KB flash memory
 \end{itemize}
 
+\noindent
 Additionally, the evaluation kit used supports the following I/O peripherals:
 
 \begin{itemize}
@@ -133,16 +147,20 @@ Additionally, the evaluation kit used supports the following I/O peripherals:
 	\item Oversized board pads for GPIO access
 \end{itemize}
 
+\noindent
 Ethernet and \gls{tcp}/IP is also supported by eLua for this platform, which should simplify the use of this feature in our state machines. Drivers interfacing with eLua for other peripherals do not seem to be present, but given eLua's open source, it should be possible to add these if needed.
 
 \subsection{Running eLua on the Evaluation Kit Board}
 \label{sec:running_elua}
 In order to illustrate how quickly I was able to get the Lua interpreter up and running on the LM3S9D92, I have included a short description of the process in this section.
 
+\noindent
 The first step was to get the interface to the evaluation kit board up and running. The board has an FTDI chip\footnote{\url{http://www.ftdichip.com/FTProducts.htm}} converting between USB and UART interfaces, so in order to communicate with the board we only need to connect it via USB. Texas Instruments also provide convenient desktop tools for connecting and flashing programs to the board, provided you are running on Windows. I simply had to install all the proper tools and drivers from the included CD, and turn the board on.
 
+\noindent
 The next step was to get eLua running on the microcontroller. Using the flashing tool provided with the kit, I simply downloaded the appropriate binary image from the eLua website and copied it over.
 
+\noindent
 The only challenge in this process was to find a suitable terminal emulator for Windows. The eLua wiki offered a few alternatives,\footnote{\url{http://wiki.eluaproject.net/Terminal\%20Emulators\%20for\%20eLua}} but many were outdated or didn't work properly. After trying out a few, I managed to connect using TeraTerm, and was able to run Lua scripts live through the eLua interpreter. Given the relative ease of this process, running Lua-based state machine applications seemed to be a very feasible option.
 
 \subsection{Running the Initial State Machine Applications}
@@ -162,6 +180,7 @@ After making the necessary changes to the code\footnote{\url{https://github.com/
 \subsubsection{The Client - Server Application}
 When testing the client-server application on the evaluation kit board, I chose to make the microcontroller the active client, and let the desktop be the passive server. To make it run on the board, I had to make some additional changes to the code.\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/client-server-micro}} The LuaSocket library is not available in eLua, but it has its own module for \gls{tcp}/IP management, \emph{net}. To use this module instead, I only had to change the functions for connecting, sending and receiving on the network in the client state machine. All state, event and transition definitions fortunately remained the same.
 
+\noindent
 Running the application on the board produced almost identical results as in the desktop environment, with one exception: after about 14 requests, the client application running on the board runs out of memory, as displayed in Fig.~\ref{fig:client_output_micro}. This is where the trouble starts.
 
 \begin{figure}[htp]
@@ -171,6 +190,7 @@ Running the application on the board produced almost identical results as in the
 	\label{fig:client_output_micro}
 \end{figure}
 
+\noindent
 Since running out of memory after a few seconds is not an option, some changes to the system must be made. These changes will be discussed in the following sections.
 
 \section{Memory Use in the Runtime System}
@@ -229,12 +249,14 @@ end
 	\label{code:simple_task}
 \end{listing}
 
+\noindent
 For comparison, we create a simple program performing roughly the same tasks as the state machine application: continuously running the simple task, in addition to making periodic memory usage measurements and sending aggregate data to a desktop application. The code for the test program is included in Code snip.~\ref{code:memory_overhead_test}, and the full code used for this part is available on GitHub.\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/mem-nonopt}}
 
 \subsection{Results of the First Comparison}
 \label{sec:first_comparison}
 Figure~\ref{fig:memory_use_first} shows a graph representation of the memory used as a function of time. It is clear that the memory overhead of running this program as a state machine application is significant. The simple program uses only 14,7KB on average with a maximum of 17,3KB, while the state machine application uses 55,6KB of dynamic memory on average, with a maximum of over 66KB in this short period, almost 4 times as much. The huge difference in average memory used implies that the overhead of the runtime system could be as high as 40KB, close to half of the available dynamic memory, regardless of which state machine application is implemented.
 
+\noindent
 Additionally, the high maximum value is worth noticing. In order to check the actual available dynamic memory, I reran the encapsulated version of the runtime system from Sect.~\ref{sec:impl_runtime_support} with the state machines for measuring and logging memory use.\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/mem-encap}} Unsurprisingly the program did not run for very long before running out of memory, but the interesting part was that the memory readings it managed to log before stopping, indicated that the program ran out of memory at around 68KB. The last received reading was 63,8KB, but we should assume that memory use at the time of the ``crash'' was higher, and judging by the previous readings, an increase of 3-4KB in the short time period seems likely. This implies that the actual maximum limit for memory use is somewhere around 68KB (indicated by the magenta-colored line in Fig.~\ref{fig:memory_use_first}), meaning that a measured value of 66KB is a little too close to this limit for ``comfort''. The reason for this limit being around 68KB, which is quite far from the microcontroller capability of 96KB \gls{ram}, is likely that some of the memory is used for controlling I/O peripherals that are not part of eLua, such as the USB interface.
 
 \begin{figure}[htp]
@@ -244,6 +266,7 @@ Additionally, the high maximum value is worth noticing. In order to check the ac
 	\label{fig:memory_use_first}
 \end{figure}
 
+\noindent
 In order to justify the use of Lua state machine applications in embedded environments, we need to find out if it is possible to further reduce the memory overhead produced by the runtime system.
 
 \subsection{Further Optimizations of Memory Use}
@@ -258,6 +281,7 @@ Given the huge memory overhead observed during the testing in Sect.~\ref{sec:fir
 
 \paragraph{Garbage Collection} Tuning the garbage collector to be more aggressive is another way to reduce memory use, however this also happens at the cost of performance. However, looking at the results in Fig.~\ref{fig:memory_use_first}, the frequent maxima and minima as well as the large relative difference between them, imply that the garbage collector is already being quite aggressive. This also makes sense, considering the amount of new memory that is frequently allocated when new event and timer objects are created.
 
+\noindent
 eLua additionally offers another alternative for handling garbage collection in situations where the remaining available memory is low, namely the \gls{egc}. This tool allows Lua to run garbage collection in some situations where this is normally not possible, for example when we reach a certain memory limit~\cite{website:elua_egc}. While this can be useful for avoiding running out of memory when we're already close to the limit, it doesn't really solve our problem, and is best used for safety measures.
 
 \paragraph{LTR} The people working on eLua recognize the need for memory-effective software in resource constrained environments, and have developed \gls{ltr} to improve the situation for eLua. \emph{``\gls{ltr} is a Lua patch that significantly decreases the \gls{ram} usage of Lua scripts, thus making it possible to run large Lua programs on systems with limited \gls{ram}''}~\cite{website:elua_ltr}. The website advertises that enabling the patch should reduce the eLua memory overhead from around 27KB to only 5.42KB on the LM3S platform, however at the cost of performance. Unfortunately, a quick test showed that the \gls{ltr} patch was already enabled for my build of eLua. While having this patch enabled when we're struggling with memory use is obviously a good thing, it also implies that without this specific patch for eLua, making our runtime system fit into the \gls{ram} of the microcontroller would have been much more difficult.
@@ -266,6 +290,7 @@ eLua additionally offers another alternative for handling garbage collection in 
 \label{sec:opt_rts}
 Considering the possibilities for further optimization discussed in Sect.~\ref{sec:more_optimization}, I decided to try a few different options, and see how they affected memory use. First, I changed all handling of string concatenation to the recommended approach with \emph{table.concat}. Next, I made state machines attempt reuse of event and timer objects whenever possible, creating new ones only when they had to. The full code for this optimized system is available on GitHub.\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/mem-opt}} With some luck, these changes would significantly reduce and and stabilize memory use. Additionally, I created a version of the runtime system without coroutines\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/no-coroutine}} as the way of handing execution control to a state machine, to see how much of an impact this would have on memory use.
 
+\noindent
 The results of running these optimized programs are displayed in Fig.~\ref{fig:memory_use_second}, and fortunately show some improvements. Some observations are listed below:
 
 \begin{itemize}
@@ -283,6 +308,7 @@ The results of running these optimized programs are displayed in Fig.~\ref{fig:m
 	\label{fig:memory_use_second}
 \end{figure}
 
+\noindent
 While we see a definite improvement over the initial system, the memory overhead is still quite high, and may potentially severely limit the types of applications we are able to develop. On the bright side, the decreased activity of the garbage collector gives us more room for tinkering with its parameters, with the potential of reducing average and peak memory use. The next section will explore these options further.
 
 \subsection{Tinkering With the Garbage Collector}
@@ -295,6 +321,7 @@ The capabilities of the garbage collector in Lua are briefly discussed in Sect.~
 
 \paragraph{Manual Control} While manual control has the potential to reduce memory use at the times when it's really needed, this probably requires knowledge of the specific application running within the runtime system, making it hard to know exactly when these times are. An option could be to experiment with the \gls{egc} mentioned in Sect.~\ref{sec:more_optimization}, but the results are hard to predict. Worst case, it actually provides us with more problems, such as getting stuck in an eternal loop of garbage collection.
 
+\noindent
 Running the optimized (with coroutines) memory-measurement application with different values for the step multiplier provides the results displayed in Fig.~\ref{fig:memory_use_opt}. Increasing the step multiplier from 200 to 600 decreases average memory use from 48,3KB to 42,5KB and peak memory use from 56KB to 45KB. Further increases of the step multiplier have a significantly smaller effect on the memory use, and we should keep in mind that performance decreases when the garbage collector has to do more work. Overall, dynamic memory use is a lot more stable, and we are getting a little closer to an acceptable amount of overhead. However, at this point I've run out of ideas on how to improve the runtime system further, so we have to accept a memory overhead of roughly 27KB for now.
 
 \begin{figure}[htp]
@@ -308,10 +335,13 @@ Running the optimized (with coroutines) memory-measurement application with diff
 \label{sec:mem_overhead_notes}
 While the previous sections offer some insights into potential memory problems we may encounter with a Lua-based state machine system in an embedded environment, we should keep in mind that the tests and measurements performed are quite specific, and over a relatively short period of time. Results may vary depending on the actual application that is run within the context of the runtime system, and for a large number of applications, the added memory overhead is not likely to be a problem given that the memory use is fairly stable.
 
+\noindent
 However, the most important point to consider is probably that the runtime system used for these measurements is just the bare minimum that is required for functional use. With a more complete, production-quality system, we would probably like to add quite a few extra features to the runtime system, which may increase overhead with respect to both dynamic memory use and performance. We already experienced that a single concept such as encapsulation of object data increased memory use so dramatically that we would quickly run out, which implies that some of the additional features we might like in a production-quality system may not be achievable in this context.
 
+\noindent
 The specific application should also be considered when comparing to the test program running without a runtime system. In the tests performed in the previous sections, our application is very simple, meaning the relative memory overhead becomes quite big. In Sect.~\ref{sec:opt_rts}, we saw that the same optimizations applied to the test program did not improve memory usage, however there is likely to be more room for such optimizations in a more complex program. On the other hand, complex programs are generally more difficult to optimize, which speaks in favor of the state machine -based system. When developing with state machines, most of the optimization will be done in the runtime system, making things simpler for the application developer.
 
+\noindent
 There are some additional ways to reduce the memory overhead of our runtime system, but they require more advanced adaptations. The eLua FAQ suggests that we can precompile our Lua code to bytecode and build it directly into the \gls{rom} file system of eLua~\cite{website:elua_faq}. This is likely to provide significant results, since we may then put all our prototypes in \gls{rom}. However, if application developers want to put the prototypes for their state machines in \gls{rom}, this approach requires them to be able to build eLua, which may require a lot of extra work. Another option is to implement the memory-heavy parts of the runtime system in C. This is a likely solution for a production-quality system, but goes beyond the scope of this project.
 
 \FloatBarrier
@@ -354,6 +384,7 @@ Running the test code described in the previous section, we use values for task\
 	\label{tab:task_size_time}
 \end{table}
 
+\noindent
 Comparing the results from running the state machine test application and the test program, we get the results displayed in Fig.~\ref{fig:performance_overhead_rel}. We see that for smallest tasks tested, the state machine application takes more than 5 times as long as the simple test program to complete the task. As the size of the task increases, this difference becomes less significant, and at 100ms it is hardly noticeable. Considering that the state machine application has some overhead associated with each run of the task, this is expected, but we should analyze the data a little further to get an impression of the impact this has on any potential real application.
 
 \begin{figure}[htp]
@@ -363,8 +394,10 @@ Comparing the results from running the state machine test application and the te
 	\label{fig:performance_overhead_rel}
 \end{figure}
 
+\noindent
 Adjusting the results for number of repeats and task size, we get the relative amount of overhead compared to the amount of useful work done. Figure~\ref{fig:performance_overhead_abs} shows the results of these computations. We see that for the special case where we only perform the given task once, the processing overhead is significant for small tasks, with up to 5/6 of the processing time being spent on runtime system overhead. However, it is more realistic to look at the cases where a task is repeated over time. As long as the task is repeated more than a few times, the exact number does not seem to make a real difference (the curve for \emph{task\_size = 50} almost completely fits the curve for \emph{task\_size = 100} in Fig.~\ref{fig:performance_overhead_abs}). While the processing overhead is still quite high for small tasks (up to almost 3/4) when the task is repeated over time, it is much smaller than when running a task once, which implies that there is some ``initial setup'' computation performed in the runtime system. For tasks taking around 10ms or more to complete, this processing overhead becomes insignificant.
 
+\noindent
 In addition to showing processing overhead, the results in Fig.~\ref{fig:performance_overhead_abs} give us an indication of how frequently the system is able to handle tasks of various sizes before these tasks start to become delayed in time. The system will for example not be able to handle scheduling tasks that take 100$\mu$s with a frequency of 1/5000, because even though there is plenty of time to complete 5000 tasks taking 100$\mu$s in one second, we also have to account for the runtime system overhead, which in this case is more than 250$\mu$s per 100$\mu$s of useful work. This means that a state machine task taking 100$\mu$s will in reality use around 350$\mu$s of processing time, meaning it can be scheduled at most with a frequency of roughly 1/2850 to avoid experiencing delay. Similar considerations must be made when considering bigger tasks, at least up to 10ms.
 
 \begin{figure}[htp]
@@ -374,6 +407,7 @@ In addition to showing processing overhead, the results in Fig.~\ref{fig:perform
 	\label{fig:performance_overhead_abs}
 \end{figure}
 
+\noindent
 In order to get an impression of how the results in Fig.~\ref{fig:performance_overhead_abs} relate to real tasks a state machine application might perform, time required to send messages of various sizes over TCP/IP was measured. A simple test program\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/ethernet-send}} was loaded onto the microcontroller, and the results from these measurements are displayed in Tab.~\ref{tab:ethernet_send_times}. Surprisingly, messages longer than 100 characters apparently take less time to send, however this is not that relevant. The important point is that sending a message over TCP/IP takes between 180ms and 200ms, which judging by the results in Fig.~\ref{fig:performance_overhead_abs} will not be affected significantly by the runtime system processing overhead. It seems that for many real tasks, the processing overhead of the runtime system may be negligible, but more tests should be run in order to arrive at a more definite conclusion.
 
 \begin{table}
@@ -401,6 +435,7 @@ In order to get an impression of how the results in Fig.~\ref{fig:performance_ov
 \label{sec:comp_performance_overhead}
 Compared to the runtime support system proposed in Sect.~\ref{sec:impl_runtime_support}, the memory-optimized version presented in Sect.~\ref{sec:opt_rts} has some significant differences. The various changes described in Sect.~\ref{sec:memory_analysis} and~\ref{sec:more_optimization} were expected to individually both increase and decrease performance, so it is hard to predict what the final result is. To find out, we run the same state machine program described in Sect~\ref{sec:performance_test_code} also with the first version of the runtime system,\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/calc-overhead-nonopt}} and compare the results with those from Sect.~\ref{sec:performance_overhead_measure}. Since results seem to be very similar independent of the number of times we run the task, we use 100 as a fixed value for this parameter.
 
+\noindent
 The compared results are displayed in Fig.~\ref{fig:performance_overhead_comp}. We see that the first version of the runtime system actually performs a little worse than the memory optimized system, so by optimizing memory use, we have also inadvertently made the runtime system more efficient with respect to processing overhead. This clearly speaks in favor of the optimized version.
 
 \begin{figure}[htp]
@@ -421,6 +456,7 @@ As a final way of testing the runtime system, a more complete and realistic stat
 
 \paragraph{Support for Parallelism} Without support for real parallelism in Lua, it is challenging to create an application that serves both as an active ``client'' and a ``server''. If we want to continuously do useful work in our application, we are unable to listen for events and signals from external sources, as mentioned in Sect.~\ref{sec:runtime_system_issues}. One option is to periodically listen for external signals for a short time, but depending on how often and how long we listen, we risk missing a lot of the signals. Additionally, performing this task could in the worst case provide a relatively large amount of overhead, depending on how often external signals are actually received. In order to handle proper concurrency, we probably have to extend our runtime system with some kind of real parallelism, which may prove challenging in an embedded environment.
 
+\noindent
 It should be noted that while challenging, implementing support for asynchronous reception of external events is still feasible in this context, with some assumptions. As mentioned in Sect.~\ref{sec:runtime_system_issues}, if external event is buffered (for example at the sender's outgoing socket), we could let the runtime system periodically run a coroutine that checks this buffer. Given the results in Sect.~\ref{sec:performance_overhead_measure}, the extra overhead required for this routine may not be significant, depending on the tasks performed by the active state machines. With this approach, we delegate the responsibility for real parallelism to the ``client''-side of the application (it may have to receive data on one socket while at the same time having data buffered and ready for sending on another).
 
 \paragraph{Summary} Simply put, there are some significant challenges that must be overcome in order to be able to develop more than simple applications within our runtime system. The choice of eLua as the underlying platform for the Lua interpreter has some impact on this, as it imposes some limitations on our Lua environment. But considering that eLua is still only in version 0.9, this might improve in the future. However, for a production-quality state machine runtime system, it might be safer to develop a separate and more specialized Lua platform for embedded systems.

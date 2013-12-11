@@ -9,12 +9,14 @@ State machine systems is a well-established concept in the world of software, an
 \subsection{Reactive Blocks}
 \label{sec:reactive_blocks}
 Reactive Blocks\footnote{\url{http://www.bitreactive.com}} is a Java-based framework for developing state machine applications, based on \gls{uml} activities. It offers integration with the Eclipse \gls{ide}, and is essentially a code/application generator with a graphical interface, tailored for event-driven and concurrent systems. Application design is done by creating, connecting and combining various \emph{building blocks}. These building blocks consist of three parts:
+
 \begin{itemize}
 	\item Activity diagram: describes the internal behavior and logic of the block.
 	\item External state machine: serves as an interface towards other blocks and the enclosing application. Defines which input signals are allowed in a given state, transitions associated with an input signal and a state, and any output signals resulting from the transition.
 	\item Java methods that handle any operations performed as part of a transition.
 \end{itemize}
 
+\noindent
 An example of a building block in Reactive Blocks is displayed in Fig.~\ref{figure:reactive_blocks}.
 
 \begin{figure}[htp]
@@ -24,7 +26,9 @@ An example of a building block in Reactive Blocks is displayed in Fig.~\ref{figu
 	\label{figure:reactive_blocks}
 \end{figure}
 
+\noindent
 The Reactive Blocks SDK has various advantages for development of state machine -based applications:
+
 \begin{itemize}
 	\item It comes with a built-in verification tool that helps the user discover and handle logical mistakes and design flaws in the application. The framework also integrates with JUnit, for testing separate components and operations.
 	\item Instead of a large and complex code base, the application consists of a hierarchy of connected building blocks, with functionality and logic defined at the design level. This generally makes projects easier to organize, maintain and extend.
@@ -32,6 +36,7 @@ The Reactive Blocks SDK has various advantages for development of state machine 
 	\item Java has a huge base of libraries that may be combined with Reactive Blocks to provide functionality and application development on higher levels.
 \end{itemize}
 
+\noindent
 However, one fundamental disadvantage is that any applications created with Reactive Blocks require a Java virtual machine. This creates an obstacle when working on embedded systems, because the Java SE Embedded \gls{vm} currently only supports the \emph{most powerful} embedded systems~\cite{website:java_embedded_vm}. Memory requirements range from 130KB \gls{ram}/350KB \gls{rom} (minimal configuration) to several MB for both \gls{ram} and \gls{rom} (full configuration), which is more than what you can expect to find in a typical lightweight embedded system.
 
 \subsection{RKH}
@@ -45,14 +50,18 @@ RKH\footnote{\url{http://rkh-reactivesys.sourceforge.net}} is a C-based developm
 	\label{figure:rkh_transition}
 \end{figure}
 
+\noindent
 RKH has some particularly strong advantages when developing state machine applications on embedded systems:
+
 \begin{itemize}
 \item RKH is fairly platform-independent, and already built to support many platforms and processors (linux, \gls{rtos}, mbed etc…). Additionally, the modules are customizable and the project is open source, meaning it can be adapted also to custom platforms.
 \item The system has a very small memory footprint, making it usable also for minimal embedded systems.
 \item Application design with state tables and diagrams is simple and maintainable.
 \end{itemize}
 
+\noindent
 However, for the less experienced programmer, RKH also provides some challenges:
+
 \begin{itemize}
 	\item While parts of the RKH interface can be intuitively understood, other parts (like declaring actions) require at least basic knowledge of C programming. Programming in C is considered complex and difficult compared to ``higher level''-languages like Java, Python or Lua.
 	\item Customization and adaptation of the software platform requires knowledge of and skills in C programming.
@@ -63,8 +72,10 @@ However, for the less experienced programmer, RKH also provides some challenges:
 \label{sec:quantum_leaps}
 Quantum Leaps\footnote{\url{http://www.state-machine.com}} offers a product for developing state machine -based applications in two parts: an active object framework, \gls{qp}, and a graphical modeling tool, \gls{qm}.
 
+\noindent
 \gls{qp} is open-source, portable, C/C++ based, and built on a non-blocking, run-to-completion kernel. \gls{qp}-applications consist of strictly encapsulated and asynchronously communicating active objects similar to the building blocks of Reactive Blocks described in Section \ref{sec:reactive_blocks}. The behavior of an active object is specified by an UML statechart, which can be modeled in \gls{qm}. QM is a fully graphical modeling environment which generates C or C++ code according to the UML statecharts to be used with the \gls{qp} framework. An example of a statechart modeled in \gls{qm} is displayed in Fig.~\ref{figure:qm_statechart}.
 
+\noindent
 Some of the advantages with \gls{qp}/\gls{qm} are:
 \begin{itemize}
 	\item Memory requirements for \gls{qp} are very low, and range from 2KB \gls{rom}/100B \gls{ram} (\gls{qp}-nano) to 8KB \gls{rom}/1KB \gls{ram} (\gls{qp}/C and \gls{qp}/C++).
@@ -80,6 +91,7 @@ Some of the advantages with \gls{qp}/\gls{qm} are:
 	\label{figure:qm_statechart}
 \end{figure}
 
+\noindent
 The major disadvantage with \gls{qp}/\gls{qm} is that it is implemented in C/C++, which means implementation of application-specific transaction operations require knowledge of C/C++ programming. However, while these are considered to be more low-level languages than for example Python, the level of knowledge required in this context may not be all that high (these operations can be quite simple).
 
 \subsection{The State Machine Compiler}
@@ -92,8 +104,10 @@ The State Machine Compiler\footnote{\url{http://smc.sourceforge.net/}} is an ope
 	\caption[A state machine created with the State Machine Compiler]{A generated graphical model for a state machine created with the State Machine Compiler. Image source: \url{http://smc.sourceforge.net/Images/SmcEx4_Vehicle.png}} \label{fig:state_map_compiler}
 \end{figure}
 
+\noindent
 The state machine compiler has numerous advantages when it comes to simple state machine generation. It supports many languages, and has a simple and flexible way of defining state machines. The design is not based on graphical models, but it is possible to generate such models from the state machine definitions in order to check for errors and inconsistencies. The generated state machines require the developers to include a library with their code, but the size of this is only 5KB.
 
+\noindent
 It is however unclear whether the State Machine Compiler is portable. The program itself runs on any Java platform, but the portability of the generated state machines likely depends on the implementation language, and whether any operating system facilities are used.
 
 \section{Lua in Embedded Systems}
@@ -116,4 +130,5 @@ Mihini\footnote{\url{http://www.eclipse.org/mihini}} is an open-source embedded 
 \label{sec:elua}
 eLua\footnote{\url{http://www.eluaproject.net}} (or Embedded Lua) is an open-source, full implementation of the Lua virtual machine for some selected processors and embedded platforms. It does not require an operating system to run, and is portable to other platforms in addition to the ones supported. Like standard Lua, eLua is made to be minimalistic, and thus only offers some specific libraries for the embedded platform in addition to the standard Lua implementation. The modules are generalized and designed to run on various platform, making the Lua applications built on top of the framework almost completely platform-independent. eLua provides modules for most of the common peripherals, like LEDs, buttons, Ethernet and USB, as well as facilities like system timers and PIO. The full binary image of eLua requires ~256KB of \gls{rom}, but by removing some of the additional modules (if they are not required by the application), it can also fit on a system with only 128KB. eLua provides its own minimal file system, allowing Lua source code to be loaded onto and run directly on the microcontroller.
 
+\noindent
 Because it is fairly quick and easy to get started with eLua on one of the supported platforms, I chose to use eLua with the LM3S9D92 microcontroller for my experimental work in Ch.~\ref{ch:experimental_work}. The software provides a solid base for testing the feasibility of Lua applications, including those based on state machines, on minimalistic platforms. Some additional characteristics of eLua that are relevant in this context are described in Sect.~\ref{sec:running_on_micro}.
