@@ -397,7 +397,7 @@ In order to get an impression of how the results in Fig.~\ref{fig:performance_ov
 	\label{tab:ethernet_send_times}
 \end{table}
 
-\subsection{Comparing Performance with the First Version of the Runtime System}
+\subsection{Comparing Performance to the First Version of the Runtime System}
 \label{sec:comp_performance_overhead}
 Compared to the runtime support system proposed in Sect.~\ref{sec:impl_runtime_support}, the memory-optimized version presented in Sect.~\ref{sec:opt_rts} has some significant differences. The various changes described in Sect.~\ref{sec:memory_analysis} and~\ref{sec:more_optimization} were expected to individually both increase and decrease performance, so it is hard to predict what the final result is. To find out, we run the same state machine program described in Sect~\ref{sec:performance_test_code} also with the first version of the runtime system,\footnote{\url{https://github.com/Desarc/state_machine_rts/tree/master/calc-overhead-nonopt}} and compare the results with those from Sect.~\ref{sec:performance_overhead_measure}. Since results seem to be very similar independent of the number of times we run the task, we use 100 as a fixed value for this parameter.
 

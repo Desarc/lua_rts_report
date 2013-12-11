@@ -46,7 +46,7 @@ While the previous programming languages discussed have notable similarities to 
 
 Given these properties, the conclusion for the comparison between Java and Lua is similar to that of the Lua-Python comparison. If we have an abundance of memory at our disposal, and the interpreter is ported to our platform, the better choice is in most cases Java. However, in embedded environments, these requirements are not likely to be fulfilled.
 
-\subsection{C and C++}
+\subsection{C}
 \label{sec:lua_vs_c}
 When working with embedded systems on smaller devices, it is very natural to consider using C. C is by far the most commonly used programming language for embedded systems~\cite{phd:dunkels}, because of the control it gives over lower level entities like I/O devices and memory, combined with good performance and (if the program is well-designed) low memory use. This makes the effort required to port a program to a new architecture relatively low, because you don't have to rewrite a whole \gls{vm}. However, coding in C is significantly more tedious, as we have to handle things memory allocation. We would like to provide application development at a ``higher level'', where these things are handled automatically, making the development process a lot quicker and easier (especially for less experienced programmers).
 
@@ -56,14 +56,14 @@ Since Lua is written in C, a Lua state machine application will obviously be lar
 \label{sec:lua_and_state_machines}
 This section contains a fairly superficial analysis of how suitable or not the Lua programming language may be for state machine systems, based on its properties (some of which are summarized in Sect.~\ref{sec:lua_language}).
 
-\subsection{The Advantages of Using Lua in a State Machine System}
+\subsection{The Advantages of State Machine Systems in Lua}
 \label{sec:lua_advantages}
-As a starting point, some of the apparent advantages of developing state machine applications are mentioned.
+As a starting point, some of the apparent advantages of developing state machine applications in Lua are mentioned.
 
 \paragraph{Speed}
 Lua is considered to be one of the fastest available scripting languages, and independent benchmarks support this claim~\cite{website:computer_language_benchmarks_game}. Speed versus memory usage is a common trade-off in computer systems, and this is highly relevant also for embedded real-time systems, where both memory and speed have restricting limits. It is unlikely that Lua performance can (on average) match that of a fully compiled language like Java or C++ on any architecture, but relatively good performance combined with a low memory cost and low complexity makes Lua a possible middle-option.
 
-The performance of Lua may be further increased with LuaJIT\footnote{http://luajit.org/} (however at a slightly increased memory cost). LuaJIT is an independently maintained \gls{jit} for Lua, whose purpose is to increase Lua performance by compiling (and caching) Lua code to machine code (as opposed to bytecode, which is what the standard Lua interpreter does). LuaJIT has been shown to increase Lua performance by significant factors for single threaded programs on various processors~\cite{website:luajit_performance}, but comes at the cost of decreased portability.
+The performance of Lua may be further increased with LuaJIT,\footnote{http://luajit.org/} however at a slightly increased memory cost. LuaJIT is an independently maintained \gls{jit} for Lua, whose purpose is to increase Lua performance by compiling (and caching) Lua code to machine code (as opposed to bytecode, which is what the standard Lua interpreter does). LuaJIT has been shown to increase Lua performance by significant factors for single threaded programs on various processors~\cite{website:luajit_performance}, but comes at the cost of decreased portability.
 
 \paragraph{Embedding}
 In addition to the Lua interpreter itself being portable, Lua is easy to embed into applications written in other languages. Similarly, Lua may be extended with libraries written in other languages. Lua is actually designed to be an extension language, and this area also accounts for most of its use~\cite{website:where_lua_is_used}. Lua is particularly refined for working with C, providing a robust and flexible C \gls{api}~\cite[Ch.24]{book:programming_in_lua_first}. This means that functionality that may be inconvenient to implement in Lua (e.g. I/O handling on a microcontroller) can be added through a C library with relative ease. Additionally, in the context of a state machine system, it might be possible to implement a runtime support system in C for efficiency and control, including a Lua interpreter for state machine definitions on a higher level.
@@ -77,15 +77,15 @@ Lua supports multitasking in the form of coroutines, which is collaborative (non
 \paragraph{Complexity}
 One of the goals of Lua is to be simple, without being simplistic~\cite{article:the_implementation_of_lua}. It is fairly easy for less experienced programmers to read and use Lua, allowing users to add functionality without having to learn all the underlying quirks. At the same time, the Lua meta-mechanisms allow for more complex and powerful use of the language, resulting in support for additional paradigms (like object-oriented programming). This could imply that getting started with Lua is easy, while mastering its concepts might be more difficult. In any case, given a working interpreter for a specific platform, it is likely easier for the less experienced developer to get started on application development, compared to working with a language like C.
 
-\subsection{The Disadvantages of Lua in a State Machine System}
+\subsection{The Disadvantages State Machine Systems in Lua}
 \label{sec:lua_disadvantages}
-While there are many arguments that speak in favor of exploring Lua for state machine based systems, there are also some apparent limitations. These may be specific to some particular cases, or more general and pervasive, and are discussed below.
+While there are many arguments that speak in favor of exploring Lua for state machine based systems, there are also some apparent limitations. These may be specific to some particular cases, or more general and pervasive, and are briefly discussed below.
 
 \paragraph{Multitasking}
 Lua offers non-preemptive multitasking, which is probably sufficient in most cases for an extension language, and for many types of state machine systems. However, if we want a general pure Lua state machine runtime support system, preemptive multitasking may to some degree be necessary. This however depends on the kind of semantics we want to allow in our system (such as preempting ongoing transitions), and whether or not we want to allow full control of processing time for arbitrary state machines.
 
 \paragraph{Timers}
-A first glance at the Lua reference manual indicates that standard Lua offers very limited facilities for time measurement. Lua allows for \emph{second}-based timestamps as the finest granularity, which may be sufficient for the intended use of Lua as an extension language, but becomes a problem if one wants to implement real-time systems fully in Lua. Ideally, at least millisecond granularity should be available. While there are third-party libraries that solve this issue, there are no options for the standard core Lua.
+A first glance at the Lua reference manual indicates that Lua offers very limited facilities for time measurement. Standard Lua allows for \emph{second}-based timestamps as the finest granularity, which may be sufficient for the intended use of Lua as an extension language, but becomes a problem if one wants to implement real-time systems fully in Lua. Ideally, at least millisecond granularity should be available. While there are third-party libraries that solve this issue, there are no options for the standard core Lua.
 
 \paragraph{Software libraries}
 One of the goals of Lua is to provide a core that is as small as possible, and thus stripped of most non-essential parts. This means that standard Lua only offers basic Lua functionality~\cite[Ch.6]{manual:lua_reference_manual}, and anything else must be added through extra libraries. While there are many different third-party libraries available for Lua, these tend to have less portability than the core itself, limiting our options if we want to run Lua on anything but the most common platforms. Additionally, Lua libraries are far less in number and diversity than those of its competitors, like for example Python.

@@ -52,7 +52,7 @@ As noted in Sect.~\ref{sec:lua_and_embedded}, Lua is considered to be sparse whe
 
 While I was able to reduce the dynamic memory use of the runtime system to relatively stable and more acceptable levels, it is still likely to be too high for certain applications, and especially if we move to platforms with even less resources. Additionally, adding features to the runtime system is likely to increase memory use for even higher overhead. More experienced Lua programmers may be able to find more room for memory optimization in the runtime system, but it is possible that we have to move significant parts to C code in order to decrease the memory overhead sufficiently.
 
-Even if memory use proved to be almost too high when using Lua to create a state machine runtime system, this does not necessarily make Lua a ``worse'' alternative. Compared to lower level languages like C, Lua is likely a worse choice in this respect, but as noted in Sect.~\ref{sec:lua_compared}, compared to languages like Python and Java, Lua is the better choice. 
+Even if memory use proved to be almost too high when using Lua to create a state machine runtime system, this does not necessarily make Lua a ``worse'' alternative. Compared to lower level languages like C, Lua is likely a worse choice in this respect, but as noted in Sect.~\ref{sec:lua_compared}, compared to languages like Python, Perl and Java, Lua is the better choice. 
 
 \subsection{Performance}
 \label{sec:disq_performance}
@@ -76,9 +76,17 @@ eLua is available for only a small set of microcontrollers, and development is s
 
 \section{Potential for Automatic Code Generation}
 \label{sec:disq_automatic_code}
+Providing a runtime system framework to support state machine definitions goes a long way in improving the efficiency and reducing the difficulty of developing state machine applications. However, with these things already in place, we can take this a step further, and create modeling tools that generate the code for the state machine definitions based on graphical models. With graphical models as the basis for development, it becomes a relative triviality to do things like error checking, consistency checking, extension and addition of modules.
+
+Given the simple and consistent structure of the Lua code for the sample state machine applications in Sect.~\ref{sec:impl_state_machines}, it seems feasible to create an automatic code generator based on graphical models for this runtime system. Operations will probably still have to be defined by Lua code, but the state and event structure should be rather easily translatable. Note that as the operations become more complex (for example using several different external libraries), the advantage of this type of code generation diminishes some, since we end up writing a lot of code anyway, but it is still useful.
+
+In addition to making the application development process smoother, automatic code generation is likely to solve some of the robustness issues described in Sect~\ref{sec:disq_robustness}, particularly those related to developer errors. With this approach, the developer may never have to write Lua code that directly interfaces with the runtime system, meaning we can focus our efforts on more general error handling.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
 \section{Further work}
 \label{sec:further_work}
+While this project has explored some of the issues associated with runtime systems for state machines in Lua, it serves only as a starting point, and there are many possible directions for continuing this work.
+
+\paragraph{Automatic Code Generation} As discussed in Sect.~\ref{sec:disq_automatic_code}, 

@@ -76,10 +76,25 @@ Some of the advantages with \gls{qp}/\gls{qm} are:
 \begin{figure}[htp]
 	\centering
 	\includegraphics[scale=0.6]{qm_statechart}
-	\caption[An UML statechart in QM]{A \gls{qp} active object modeled as a hierarchical UML statechart in \gls{qm}. Each statechart lists possible input signals and the following output signals or actions. Image source: \url{http://www.state-machine.com/qm/index.php} \label{figure:qm_statechart} }
+	\caption[An UML statechart in QM]{A \gls{qp} active object modeled as a hierarchical UML statechart in \gls{qm}. Each statechart lists possible input signals and the following output signals or actions. Image source: \url{http://www.state-machine.com/qm/index.php}}
+	\label{figure:qm_statechart}
 \end{figure}
 
 The major disadvantage with \gls{qp}/\gls{qm} is that it is implemented in C/C++, which means implementation of application-specific transaction operations require knowledge of C/C++ programming. However, while these are considered to be more low-level languages than for example Python, the level of knowledge required in this context may not be all that high (these operations can be quite simple).
+
+\subsection{The State Machine Compiler}
+\label{sec:state_machine_compiler}
+The State Machine Compiler\footnote{\url{http://smc.sourceforge.net/}} is an open source Java program for generating state machine code in a variety of languages, including Java, Lua, Python and Ruby. The procedure involves creating a file with definitions of states, transitions, classes, packages and the like, and compiling this file into program code to be integrated in an application. The generated code then offers an interface to the transitions, allowing other parts of the application to explicitly invoke a transition. Figure~\ref{fig:state_map_compiler} shows an example of a graphical state machine model generated from a State Machine Compiler file.
+
+\begin{figure}[htp]
+	\centering
+	\includegraphics[scale=0.3]{state_map_compiler}
+	\caption[A state machine created with the State Machine Compiler]{A generated graphical model for a state machine created with the State Machine Compiler. Image source: \url{http://smc.sourceforge.net/Images/SmcEx4_Vehicle.png}} \label{fig:state_map_compiler}
+\end{figure}
+
+The state machine compiler has numerous advantages when it comes to simple state machine generation. It supports many languages, and has a simple and flexible way of defining state machines. The design is not based on graphical models, but it is possible to generate such models from the state machine definitions in order to check for errors and inconsistencies. The generated state machines require the developers to include a library with their code, but the size of this is only 5KB.
+
+It is however unclear whether the State Machine Compiler is portable. The program itself runs on any Java platform, but the portability of the generated state machines likely depends on the implementation language, and whether any operating system facilities are used.
 
 \section{Lua in Embedded Systems}
 \label{sec:lua_in_embedded}
