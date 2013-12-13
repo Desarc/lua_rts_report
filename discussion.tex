@@ -105,10 +105,20 @@ Optionally, instead of writing a code generator from scratch, it could be a good
 
 \section{Conclusion}
 \label{sec:conclusion}
+Given that the experiments conducted as part of this project were quite limited in their extent, only covering a few aspects of a simple prototype running on a specific \gls{vm} on a single microcontroller, it is hard to base any \emph{definite} conclusions on these. We do however observe some indications.
 
-\section{Further work}
+\noindent
+The results obtained in Ch.~\ref{ch:experimental_work} indicate that while feasible, this type of state machine systems may be impractical to develop in Lua on embedded devices, particularly because of the high memory use. It is important to note that this memory problem comes from the use of a runtime support system framework for the state machine definitions, which may add significant overhead also with other implementation languages. However, with lower-level languages like C, it is likely that we will be able to control and possibly limit memory use for this framework to a higher degree, making lower-level programming languages a better option. The disadvantage is potentially increased development effort when developing applications with the framework. In order to get the best from both worlds, the solution here may be a combined approach, as described in Sect.~\ref{sec:disq_libraries}. In any case, more experiments should be done in order to verify these indications.
+
+\noindent
+If we move away from the embedded context, a state machine system in Lua is likely to both be more feasible and practical. In a desktop environment, memory overhead of a runtime system is not likely to be a problem, and we get the added bonus of being able to use the various third-party libraries that exist for Lua. However, considering the comparison to other programming languages in Sect.~\ref{sec:lua_compared}, we see that there are likely better options when working in a desktop environment.
+
+\noindent
+In short, it seems that in the contexts of state machine systems on desktop platforms and embedded devices, Lua is the middle child that handles both contexts ok, but neither best. Considering that Lua was designed to be an extension language, to be embedded in other applications~\cite{article:the_implementation_of_lua}, we are likely better off sticking to this type of approach instead of writing a pure Lua system.
+
+\section{Further Work}
 \label{sec:further_work}
-While this project has explored some of the issues associated with runtime systems for state machines in Lua, it serves only as a starting point, and there are many possible directions for continuing this work.
+While this project has explored some of the issues associated with runtime systems for state machines in Lua, it serves only as a starting point, and there are several possible directions for continuing this work.
 
 \paragraph{Extending the Runtime System} While the prototype created for this project serves as a basis, some features are missing that should be present in a more complete version. Sections~\ref{sec:runtime_system_issues} and~\ref{sec:complete_app} mention some of these issues, and they should be addressed in order to determine whether Lua really is a good alternative for state machine systems. This includes adding missing features, like saving events and listening for external signals, as well as optimizing the system in order to decrease the large memory overhead.
 
@@ -119,6 +129,4 @@ While this project has explored some of the issues associated with runtime syste
 \paragraph{Testing on Other Platforms} In this project, the runtime system was only tested in Linux and Windows desktop environments, and on a single microcontroller with eLua. Additionally, the microcontroller hardware was in the higher end of the scale, having a lot of memory and processing capabilities compared to those further down. Other platforms, possibly with even less available resources, should also be tested for feasibility.
 
 \noindent
-Additionally, since eLua only supports a select set of microcontrollers, the effort required to port a potential state machine framework to other platforms should be looked into.
-
-\paragraph{Real Applications} 
+Additionally, since eLua only supports a select set of microcontrollers, the effort required to port a potential state machine framework to other platforms should be looked into. This could also enable testing of more realistic applications, if for example the chosen platforms have better support for peripherals such as sensors.
