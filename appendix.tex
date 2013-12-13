@@ -598,8 +598,8 @@ end
 \end{listing}
 
 \FloatBarrier
-\chapter{UML State Machine Specifications}
-\label{app:stm_uml}
+\chapter{SDL State Machine Specifications}
+\label{app:stm_sdl}
 
 \section{Traffic Light Controller}
 \label{uml:traffic_light}
@@ -607,8 +607,8 @@ end
 \begin{figure}[htp]
 	\centering
 	\includegraphics[scale=0.30]{traffic_light_stm}
-	\caption[UML specification for Traffic Light Controller]{UML specification for the Traffic Light Controller state machine. Image source: Unit 1 exercise for TTM4160 course, 2013}
-	\label{fig:traffic_light_uml}
+	\caption[SDL specification for Traffic Light Controller]{\gls{sdl} specification for the Traffic Light Controller state machine. Image source: Unit 1 exercise for TTM4160 course, 2013}
+	\label{fig:traffic_light_sdl}
 \end{figure}
 
 \FloatBarrier
@@ -619,13 +619,13 @@ end
 	\centering
 	\begin{minipage}{0.45\linewidth}
 		\includegraphics[scale=0.8]{stm_event_gen}
-		\caption[Client \guillemotleft request-generator\guillemotright  state machine]{The state machine in the client application responsible for periodically generating requests.}
+		\caption[Client ``request-generator'' state machine]{The state machine in the client application responsible for periodically generating requests.}
 		\label{fig:stm_event_gen}
 	\end{minipage}
 	\quad
 	\begin{minipage}{0.45\linewidth}
 		\includegraphics[scale=0.8]{stm_print_message}
-		\caption[Client \guillemotleft print reply\guillemotright state machine]{The state machine in the client application responsible for displaying replies from the server.}
+		\caption[Client ``print reply'' state machine]{The state machine in the client application responsible for displaying replies from the server.}
 		\label{fig:stm_print_message}
 	\end{minipage}
 \end{figure}
@@ -633,7 +633,7 @@ end
 \begin{figure}[htp]
 	\centering
 	\includegraphics[scale=0.8]{stm_request_handler}
-	\caption[Server \guillemotleft request-handler\guillemotright  state machine]{The state machine in the server application responsible for handling requests from clients.}
+	\caption[Server ``request-handler'' state machine]{The state machine in the server application responsible for handling requests from clients.}
 	\label{fig:stm_request_handler}
 \end{figure}
 
@@ -641,13 +641,13 @@ end
 	\centering
 	\begin{minipage}{0.45\linewidth}
 		\includegraphics[scale=0.8]{stm_client_conn}
-		\caption[Client TCP-socket state machine]{The state machine in the client application responsible for sending and receiving over TCP.}
+		\caption[Client TCP-socket state machine]{The state machine in the client application responsible for sending and receiving over \gls{tcp}.}
 		\label{fig:stm_client_conn}
 	\end{minipage}
 	\quad
 	\begin{minipage}{0.45\linewidth}
 		\includegraphics[scale=0.8]{stm_server_conn}
-		\caption[Server TCP-socket state machine]{The state machine in the server application responsible for sending and receiving over TCP.}
+		\caption[Server TCP-socket state machine]{The state machine in the server application responsible for sending and receiving over \gls{tcp}.}
 		\label{fig:stm_server_conn}
 	\end{minipage}
 \end{figure}
