@@ -3,24 +3,23 @@
 The field of smart devices and the \emph{Internet of Things} has received a lot of research attention in the past years, and development is still progressing quickly. As the area of applications expands and this concept becomes more pervasive, new problems and challenges appear, and must be solved.
 
 \noindent
-Often, it is difficult to get started with application development on small devices, since they usually have severe constraints on available resources, and generally no support from an operating system. Application development is usually done in low-level languages like C or even assembly, making this process a significant challenge for less experienced developers.
+Often, it is difficult to get started with application development on small devices, since they usually have severe constraints on available resources, and generally no support from an operating system. Application development is usually done in low-level languages like C or even assembly, making this process a significant challenge for less experienced developers. Can we do better?
 
 \noindent
 Additionally, it may be a challenge to document and verify the correctness of an application, depending on its complexity. Abstractions in the form of finite-state machines or component collaborations are often used in order to describe the behavior of an application in terms of verifiable and maintainable models. In some cases, these models can even be used to automatically generate the implementation code, significantly reducing development effort and the room for errors.
 
 \section{Problem Description and Scope}
 \label{sec:problem_scope}
-\noindent
 When these challenges provide a potentially high ``entrance cost'' for application development on small devices, it raises the question whether it is possible to develop methods or frameworks in order to reduce this cost. We could for example base development on a higher-level language than C, offering more abstractions with respect to issues like memory management. Additionally, we can use concepts like state machines to develop applications on an even higher level of abstraction, making the development process more intuitive, and the application more maintainable and verifiable.
 
 \noindent
 With these points in mind, one proposed solution is to create a runtime system framework for state machines in the Lua programming language, which is the focus of this report. Lua is an interpreted, lightweight, and portable scripting language, well-documented and with low resource requirements compared to other similar languages. It offers automatic memory management and a simple syntax, making it relatively easy to learn and use.
 
 \noindent
-Additionally, with a runtime system framework for state machines provided, the developers may only need to specify their application in the form of a set of \glspl{fsm}. These \glspl{fsm} are then bundled with the framework code, and run on the desired platform, given that the standard Lua interpreter is available on this platform. If it is feasible to develop and use a framework like this, it should hopefully serve as an option for simple, maintainable and verifiable application development on small devices.
+Additionally, with a runtime system framework for state machines provided, the developers may only need to specify their application in the form of a set of \glspl{fsm}. These \gls{fsm} implementations are then bundled with the framework code, and run on the desired platform, given that the standard Lua interpreter is available on this platform. If it is feasible to develop and use a framework like this, it should hopefully serve as an option for simple, maintainable and verifiable application development on small devices.
 
 \noindent
-The focus of this project is to determine if it is feasible to develop a state machine system in Lua, and use this in the context of embedded devices. This is done by creating a prototype runtime system and running some sample applications on a selected microcontroller, while doing some tests in order to measure resource use. The results are then evaluated with respect to feasibility and practicality. Some analysis is also done towards comparing the solution with other possible solutions, such as using other programming languages, in order to determine if they may provide better options. This analysis is however purely theoretical and speculative, no experiments with alternative solutions are conducted.
+The focus of this project is to determine if it is feasible to develop a state machine system in Lua, and use this in the context of embedded devices. This is done by creating a prototype runtime system and running some sample applications on a selected microcontroller, while doing some tests in order to measure resource use. The results are then evaluated with respect to feasibility and practicality. Some analysis is also done towards comparing the solution with other possible solutions, such as using other programming languages, in order to determine if they may provide better options. This latter analysis is however purely theoretical and speculative, no experiments with alternative solutions are conducted.
 
 \section{Structure of the Report}
 \label{sec:structure}
