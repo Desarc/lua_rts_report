@@ -1,16 +1,13 @@
 \pagestyle{empty}
 \begin{abstract}
 \noindent
-The field of smart devices and the \emph{Internet of Things} has received a lot of research attention in the past years, and development is still progressing quickly. As the area of applications expands and this concept becomes more pervasive, new problems and challenges appear, and must be solved.
+Working with resource-constrained smart devices can be a challenge, even for experienced developers. Applications have to be designed around the limited resources, often restricting the possible development choices. Most commonly, development on small devices is done in C, which is a low-level language requiring knowledge of concepts like memory management and pointers. For the less experienced developer, the relative difficulty of learning and using these concepts may provide a significant ``entrance cost'' to the world of embedded systems.
 
 \noindent
-Often, it is difficult to get started with application development on small devices, since they usually have severe constraints on available resources, and generally no support from an operating system. Application development is usually done in low-level languages like C or even assembly, making this process a significant challenge for less experienced developers.
+As an alternative to working with C, one might try porting the \gls{vm} for a higher level language to the device in order to support development on a higher abstraction level, provided this \gls{vm} is lightweight enough. Among higher-level languages, Lua is considered to be both simple and lightweight, and some efforts have already been made towards porting it to various embedded devices.
 
 \noindent
-Additionally, it may be a challenge to document and verify the correctness of an application, depending on its complexity. Abstractions in the form of finite-state machines or component collaborations are often used in order to describe the behavior of an application in terms of verifiable and maintainable models. In some cases, these models can even be used to automatically generate the implementation code, significantly reducing development effort and the room for errors.
-
-\noindent
-When these challenges provide a potentially high ``entrance cost'' for application development on small devices, it raises the question whether it is possible to develop methods or frameworks in order to reduce this cost. One proposed solution is to create a runtime system for state machines in the Lua programming language, which is the focus of this report. Lua is an interpreted, lightweight, and portable scripting language, well-documented and with low resource requirements compared to other similar languages. If it is feasible to develop and use a system like this, it should hopefully serve as an option for simple, maintainable and verifiable application development on small devices.
+Taking the abstraction one step further, we can base the development of embedded applications on \glspl{fsm}. Modeling an application as a set of \glspl{fsm} also provides some additional advantages, such as making it easier to maintain and verify. We can even take it to the level of graphical modeling with automatic code generation. The proposed solution is then to create a runtime system framework for state machines in Lua, with the motivating factors being that it may be lightweight and portable enough to be a feasible and possibly even good option for application development on small devices.
 
 \noindent
 The process used in this project for determining whether Lua state machine systems are feasible on small devices consists of creating a simple framework prototype, and running it with some sample applications on a selected small device (microcontroller). Additionally, some testing on resource use and performance is done, to provide data for potential comparison with alternatives in future work.
@@ -25,6 +22,6 @@ With respect to performance, the framework does not generally impair the applica
 From the results obtained, it seems that creating and using a framework for state machines in Lua is feasible, but not practical, especially when working on small devices. Lua does not perform as good as for example C in this environment, and in environments with more resources available, options like Java or Python are likely more practical. While relatively small and efficient, the resource use of the Lua framework is still too high for small devices. Additionally, standard Lua lacks support for some types of functionality a complete framework might require. It is possible to replace parts of a Lua framework with more efficient C code, making it a more feasible alternative for small devices and possibly adding missing functionality. One could even go as far as making a pure C state machine framework, providing support for state machine definitions in Lua, similar to how other applications like Wireshark utilize Lua support. The results obtained indicate that this is likely the better option.
 
 \noindent
-The experiments conducted in this project are however not very conclusive, only offering indications and creating a foundation for further work. More experiments should be done in order to verify the relevance of these results.
+The experiments conducted in this project do however not provide a basis for \emph{definite} conclusions, but offers some indications, and creates a foundation for further work. More experiments should be done in order to verify the relevance of these results.
 
 \end{abstract}
